@@ -1,13 +1,13 @@
 classdef navFilter
-    % 卫星的测量进来之前校正（钟差、钟频差、路径不等长）
+    % 卫星的测量进来之前校正（钟差、钟频差、路径差）
     % 因为它们可以在单独运行接收机时估计出来
     % 这些参数在接收机单独运行时通过积分器修正，因为误差是直接量测，噪声大
     % 在加导航滤波器时直接修正，因为这时的误差是通过滤波器估计出来的
     % 惯导的测量进来之后校正
     % 18维模型
     
+    % 导航状态、卫星校正数据、惯导零偏在执行更新后更新
     properties (Access = public)
-        % 导航状态、卫星校正数据、惯导零偏在执行更新后更新
         % 导航状态（行向量）
         pos     %位置，[lat,lon,h]，[deg,deg,m]
         vel     %速度，[ve,vn,vd]，m/s
@@ -15,7 +15,7 @@ classdef navFilter
         % 输出的卫星校正数据
         dtr     %钟差，s
         dtv     %钟频差，s/s
-        tau     %路径不等长，circ
+        tau     %路径差，circ
         % 惯导零偏
         bias    %[gyro,acc]，[deg/s,g]，行向量
         % 滤波器参数
@@ -25,12 +25,12 @@ classdef navFilter
         Px
         Qx
         R_rho
-        R_drho
-        R_phase
+        R_rhodot
+        R_dphase
     end
     
     properties (Access = private)
-        % 惯导解算用的变量（列向量）
+        % 惯导解算用的变量
         latx    %纬度，rad
         lonx    %经度，rad
         hx      %高度，m
@@ -40,7 +40,7 @@ classdef navFilter
     
     methods
         %--------初始化
-        function obj = navFilter(p0, v0, a0, T, lamda, bl)
+        function obj = navFilter(p0, v0, a0, T, lamda, bl, para)
             % p0：初始位置，deg
             % v0：初始速度，m/s
             % a0：初始姿态，deg
@@ -61,38 +61,19 @@ classdef navFilter
             obj.T = T;
             obj.lamda = lamda;
             obj.bl = bl;
-            %----P阵初值
-            a = 6371000; %地球半径
-            lat = obj.latx; %纬度，rad
-            obj.Px = diag([[1,1,1]*1 /180*pi, ...     %初始姿态误差，rad
-                           [1,1,1]*1, ...             %初始速度误差，m/s
-                           [1/a,sec(lat)/a,1]*5, ...  %初始位置误差，[rad,rad,m]
-                           5, ...                     %初始钟差距离，m
-                           0.1, ...                   %初始钟频差速度，m/s
-                           0.1, ...                   %初始路径不等长载波周数，circ
-                           [1,1,1]*0.2 /180*pi, ...   %初始陀螺仪零偏，rad/s
-                           [1,1,1]*2 *0.001*9.8])^2;  %初始加速度计零偏，m/s^2
-            %----过程噪声方差阵
-            obj.Qx = diag([[1,1,1]*0.15 /180*pi, ...                       %陀螺仪噪声，rad/s，看静止时陀螺仪输出得到
-                           [1,1,1]*1.5 *0.001*9.8, ...                    %加速度计噪声，m/s^2，看静止时加速度计输出得到
-                           [1/a,sec(lat)/a,1]*(T/2)*1.5 *0.001*9.8, ...   %位置漂移，m/s
-                           0.01*(T/2), ...                                 %钟差距离漂移，m/s
-                           0.01, ...                                       %钟频差速度漂移，m/s/s
-                           0.01, ...                                       %路径不等长载波周数漂移，circ/s
-                           [1,1,1]*0.02 /180*pi, ...                       %陀螺仪零偏漂移，rad/s/s
-                           [1,1,1]*0.2 *0.001*9.8])^2 * T^2;               %加速度计零偏漂移，m/s^2/s
-            %----量测噪声方差
-            obj.R_rho   = 8^2;                       %伪距噪声方差，m，看直接定位噪声得到
-            obj.R_drho  = 0.1^2;                     %伪距率噪声方差，m/s，看直接测速噪声得到
-            obj.R_phase = 0.004^2;                   %相位差噪声方差，circ，看相位差曲线得到
+            obj.Px = para.P;
+            obj.Qx = para.Q;
+            obj.R_rho = para.R_rho;
+            obj.R_rhodot = para.R_rhodot;
+            obj.R_dphase = para.R_dphase;
         end
         
         %--------更新
         function obj = update(obj, imu, sv)
-            % imu惯导输出，[deg/s, g]，行向量
-            % sv = [x,y,z, rho, vx,vy,vz, drho, phaseDiff]
+            % imu：惯导输出，[deg/s, g]，行向量
+            % sv = [x,y,z, rho, vx,vy,vz, rhodot, dphase]
             % 正常情况下进来的卫星测量数据（伪距、伪距率、相位差）都应该是无误差的
-            % 没有相位差的phaseDiff为NaN
+            % 没有相位差的dphase为NaN
             
             %% 惯导解算
             % 1. 零偏补偿
@@ -136,8 +117,8 @@ classdef navFilter
             n1 = size(sv,1);                    %伪距、伪距率量测个数
             n2 = length(index);                 %相位差量测个数
             % 2. 计算伪距
-            rp = lla2ecef([lat/pi*180, lon/pi*180, h]); %接收机位置矢量（ecef），行向量
-            rs = sv(:,1:3);                             %卫星位置矢量  （ecef），行向量
+            rp = lla2ecef([lat/pi*180, lon/pi*180, h]); %接收机位置矢量（ecef，行向量）
+            rs = sv(:,1:3);                             %卫星位置矢量（ecef，行向量）
             rsp = ones(n1,1)*rp - rs;                   %卫星指向接收机的位置矢量（此处使用矩阵乘法比repmat更快）
             rho = sum(rsp.*rsp, 2).^0.5;                %计算的伪距
             rspu = rsp ./ (rho*[1,1,1]);                %卫星指向接收机的单位矢量（ecef）
@@ -145,10 +126,10 @@ classdef navFilter
             Cen = [-sin(lat)*cos(lon), -sin(lat)*sin(lon),  cos(lat);
                             -sin(lon),           cos(lon),         0;
                    -cos(lat)*cos(lon), -cos(lat)*sin(lon), -sin(lat)];
-            vp = v'*Cen;                                %接收机速度矢量（ecef），行向量
-            vs = sv(:,5:7);                             %卫星速度矢量  （ecef），行向量
+            vp = v'*Cen;                                %接收机速度矢量（ecef，行向量）
+            vs = sv(:,5:7);                             %卫星速度矢量（ecef，行向量）
             vsp = ones(n1,1)*vp - vs;                   %接收机相对卫星的速度矢量
-            drho = sum(vsp.*rspu, 2);                   %计算的伪距率
+            rhodot = sum(vsp.*rspu, 2);                 %计算的伪距率
             % 4. 量测矩阵
             f = 1/298.257223563;
             F = [-(Rn+h)*sin(lat)*cos(lon), -(Rn+h)*cos(lat)*sin(lon), cos(lat)*cos(lon);
@@ -170,13 +151,13 @@ classdef navFilter
             H((2*n1+1):end,1:3) = Hc;
             H((2*n1+1):end,12) = -ones(n2,1);
             % 5. 量测量
-            Z = [ rho - sv(:,4); ...                         %伪距差（计算减量测）
-                 drho - sv(:,8); ...                         %伪距率差
+            Z = [rho    - sv(:,4); ...                       %伪距差（计算减量测）
+                 rhodot - sv(:,8); ...                       %伪距率差
                  U*Cbn(:,1)*obj.bl/obj.lamda - sv(index,9)]; %相位差的差
             % 6. 量测噪声方差阵
             R = diag([ones(1,n1)*obj.R_rho, ...
-                      ones(1,n1)*obj.R_drho, ...
-                      ones(1,n2)*obj.R_phase]);
+                      ones(1,n1)*obj.R_rhodot, ...
+                      ones(1,n2)*obj.R_dphase]);
             
             %% 滤波更新
             P = obj.Px;
