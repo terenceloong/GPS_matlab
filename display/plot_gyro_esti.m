@@ -1,4 +1,9 @@
 function plot_gyro_esti(t, gyro_bias, gyro_esti, P)
+% 仿真时，画陀螺仪零偏估计结果
+% t为时间序列
+% gyro_bias为仿真设置的零偏真值序列，deg/s
+% gyro_esti为估计的零偏序列，deg/s
+% P为理论估计标准差，rad/s
 
 P = P/pi*180;
 P = P*3;

@@ -1,4 +1,9 @@
 function plot_acc_esti(t, acc_bias, acc_esti, P)
+% 仿真时，画加速度计零偏估计结果
+% t为时间序列
+% acc_bias为仿真设置的零偏真值序列，g
+% acc_esti为估计的零偏序列，g
+% P为理论估计标准差，m/s^2
 
 P = P/9.8;
 P = P*3;
