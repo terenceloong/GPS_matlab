@@ -11,8 +11,8 @@ output_sv = evalin('base', 'output_sv_A(:,1:8,:)'); %卫星信息，[x,y,z, rho, vx,v
 BLs = evalin('base', 'BLs'); %姿态测量结果
 
 %% 数据范围 ($)
-% range = 1:length(ta); %所有点
-range = 1:40000;
+range = 1:length(ta); %所有点
+% range = 1:40000;
 
 %% 输入数据截取
 ta = ta(range);

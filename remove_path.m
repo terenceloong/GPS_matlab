@@ -2,6 +2,7 @@
 
 rmpath('acquisition')
 rmpath('app')
+rmpath('analysis')
 rmpath('BD910')
 rmpath('display')
 rmpath('embiguity')
