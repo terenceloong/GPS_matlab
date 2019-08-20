@@ -20,15 +20,19 @@ lamda = 299792458 / 1575.42e6; %波长
 range = 1:size(output_pos,1); %所有点
 % range = 101:1000; %从第几个点到第几个点
 
+%% 输入数据截取
+output_pos = output_pos(range,:);
+output_sv = output_sv(:,:,range);
+output_dphase = output_dphase(range,:);
+
 %% 申请存储空间
-n = length(range); %数据点数
+n = size(output_pos,1); %数据点数
 svN = length(svList); %卫星个数
 
 BLs = NaN(n,4); %基线测量结果，[航向角、俯仰角、基线长度、路径差]，[deg,deg,m,circ]
 
 %% 计算
-kn = 1; %存数据的位置
-for k=range
+for k=1:n
     pos = output_pos(k,1:3);
     Cen = dcmecef2ned(pos(1), pos(2));
     rp = lla2ecef(pos);
@@ -55,8 +59,7 @@ for k=range
     L = norm(Rx(1:3));         %基线长度
     psi = atan2d(Rx(2),Rx(1)); %基线航向角
     theta = -asind(Rx(3)/L);   %基线俯仰角
-    BLs(kn,:) = [psi,theta,L,Rx(4)];
-    kn = kn + 1;
+    BLs(k,:) = [psi,theta,L,Rx(4)];
 end
 
 %% 画基线测量结果

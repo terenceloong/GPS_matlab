@@ -12,19 +12,21 @@ p0 = [45.73104, 126.62481, 209]; %经纬度保留小数点后5位，高度保留到整数
 rp = lla2ecef(p0); %ecef
 
 %% 数据范围 ($)
-range = 1:size(sv_info,3); %所有点
-% range = 101:1000; %从第几个点到第几个点
+% range = 1:size(sv_info,3); %所有点
+range = 1:40000; %从第几个点到第几个点
+
+%% 输入数据截取
+sv_info = sv_info(:,:,range);
 
 %% 申请存储空间
-n = length(range); %数据点数
+n = size(sv_info,3); %数据点数
 svN = length(svList); %卫星个数
 
 error_rho = zeros(n,svN); %伪距误差，每一列为一颗卫星
 error_rhodot = zeros(n,svN); %伪距率误差
 
 %% 计算
-kn = 1; %存数据的位置
-for k=range
+for k=1:n
     rs = sv_info(:,1:3,k);
     rsp = ones(svN,1)*rp - rs;
     rho = sum(rsp.*rsp, 2).^0.5;
@@ -32,9 +34,8 @@ for k=range
     vs = sv_info(:,5:7,k);
     vsp = 0 - vs;
     rhodot = sum(vsp.*rspu, 2);
-    error_rho(kn,:) = (sv_info(:,4,k) - rho)'; %测量值减计算值
-    error_rhodot(kn,:) = (sv_info(:,8,k) - rhodot)';
-    kn = kn + 1;
+    error_rho(k,:) = (sv_info(:,4,k) - rho)'; %测量值减计算值
+    error_rhodot(k,:) = (sv_info(:,8,k) - rhodot)';
 end
 
 %% 变量输出
