@@ -1,8 +1,9 @@
 function nav_yaw_nacc()
-% 使用航向量测、不带加计零偏滤波器进行滤波
+% 使用航向量测、不带加计零偏的滤波器进行滤波
 % 标$的换数据时需要修改
 % 看伪距、伪距率噪声运行receiver_noise.m
 % 看航向测量噪声运行att_measure.m
+%==静止时水平姿态稳定，精度依赖于加计零偏大小，为了抵抗加计零偏对速度的影响，需要将速度对应的Q放大
 
 %% 导入数据 ($)
 imu_data = evalin('base', 'imu_data'); %IMU数据
@@ -24,7 +25,7 @@ imu_data = imu_data(index+(1:length(range))-1,2:7); %删除第一列时间
 %% 申请存储空间
 n = length(ta); %数据点数
 
-filter_nav = zeros(n,9);     %滤波器导航输出
+filter_nav    = zeros(n,9);  %滤波器导航输出
 filter_bias   = zeros(n,6);  %零偏估计
 filter_dtr    = zeros(n,1);  %钟差估计
 filter_dtv    = zeros(n,1);  %钟频差估计
