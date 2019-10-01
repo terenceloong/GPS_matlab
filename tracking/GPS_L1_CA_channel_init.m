@@ -9,8 +9,11 @@ code = GPS_L1_CA_generate(ch.PRN);
 ch.state = 1; %激活通道
 ch.trackStage = 'F'; %频率牵引
 ch.msgStage = 'I'; %空闲
+ch.strength = 0; %信号失锁
 ch.cnt_t = 0;
 ch.cnt_m = 0;
+ch.stableCnt = 0;
+ch.loseCnt = 0;
 ch.code = [code(end),code,code(1)]'; %列向量，为了求积分时用矢量相乘加速
 ch.timeIntMs = 1;
 ch.trackDataTail = sampleFreq*0.001 - acqResult(1) + 2;
@@ -69,8 +72,6 @@ ch.NWmean.buffSize = length(ch.NWmean.buff);
 ch.NWmean.buffPoint = 0;
 ch.NWmean.E0 = 0;
 ch.CN0 = 0;
-
-% 跟踪卡尔曼滤波器P阵
-ch.Px = diag([0.02, 0.01, 5, 1].^2); %6m, 3.6deg, 5Hz, 1Hz/s (1sigma)
+ch.CN0i = 0;
 
 end

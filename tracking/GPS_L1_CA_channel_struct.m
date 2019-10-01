@@ -5,8 +5,11 @@ ch.PRN              = []; %卫星编号
 ch.state            = []; %通道状态（数字）
 ch.trackStage       = []; %跟踪阶段（字符）
 ch.msgStage         = []; %电文解析阶段（字符）
+ch.strength         = []; %信号强度（数字）
 ch.cnt_t            = []; %跟踪时用的计数器
 ch.cnt_m            = []; %电文解析时用的计数器
+ch.stableCnt        = []; %信号稳定计数器
+ch.loseCnt          = []; %信号失锁计数器
 ch.code             = []; %伪码
 ch.timeIntMs        = []; %积分时间，ms
 ch.trackDataTail    = []; %跟踪开始点在数据缓存中的位置
@@ -36,7 +39,7 @@ ch.ephemeris        = []; %星历
 ch.codeStd          = []; %计算码鉴相器误差标准差结构体
 ch.carrStd          = []; %计算载波鉴相器误差标准差结构体
 ch.NWmean           = []; %计算NBP/WBP均值结构体
-ch.CN0              = []; %载噪比
-ch.Px               = []; %卡尔曼滤波跟踪方差阵
+ch.CN0              = []; %平均载噪比
+ch.CN0i             = []; %瞬时载噪比
 
 end

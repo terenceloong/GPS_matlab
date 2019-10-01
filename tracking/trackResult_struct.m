@@ -13,8 +13,8 @@ trackResult.carrFreq      = zeros(m,1); %载波频率
 trackResult.I_Q           = zeros(m,6); %[I_P,I_E,I_L,Q_P,Q_E,Q_L]
 trackResult.disc          = zeros(m,5); %[codeError,std, carrError,std, freqError]，鉴相器
 trackResult.bitStartFlag  = zeros(m,1); %比特开始标志
-trackResult.CN0           = zeros(m,1); %载噪比
+trackResult.CN0           = zeros(m,2); %载噪比（平均和瞬时）
 trackResult.carrAcc       = zeros(m,1); %载波加速度
-trackResult.Px            = zeros(m,4); %跟踪滤波器的P阵
+trackResult.strength      = zeros(m,1); %信号强度
 
 end

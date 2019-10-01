@@ -2,6 +2,14 @@ function ephemeris = GPS_L1_CA_ephemeris(bits)
 % 输入完整1500比特导航电文和上一字最后两位(±1)，解析GPS星历
 % 如果星历为空说明星历错误
 
+% 所有字的校验
+for k=0:49
+    if GPS_L1_CA_check(bits(k*30+(1:32)))==0 %只要检测到错误就返回
+        ephemeris = [];
+        return
+    end
+end
+
 % 电平翻转
 bits = -bits(62) * bits;
 

@@ -31,10 +31,11 @@ tic
 
 %% 创建日志文件 (#)
 fclose('all'); %关闭之前打开的所有文件
-logID = fopen('.\temp\log.txt', 'w'); %创建日志文件（时间顺序的日志）
+result_path = fileread('.\temp\resultPath.txt'); %存储结果的路径
+logID = fopen([result_path,'\log.txt'], 'w'); %创建日志文件（时间顺序的日志）
 
 %% 运行时间
-msToProcess = 60*1*1000; %处理总时间
+msToProcess = 300*1*1000; %处理总时间
 sample_offset = 0*4e6; %抛弃前多少个采样点
 sampleFreq = 4e6; %接收机采样频率
 
@@ -56,9 +57,9 @@ ta = [ts,0,0] + sample2dt(sample_offset, sampleFreq); %初始化接收机时间，[s,ms,u
 ta = time_carry(round(ta,2)); %取整
 
 %% 根据历书获取当前可能见到的卫星（*）
-% svList = [6;12;17;19]; %列向量，为了看方便
+% svList = [6;12;17;19];
 % svList = 24;
-svList = gps_constellation(tf, p0);
+svList = gps_constellation(tf, p0); %列向量，为了看方便
 svN = length(svList);
 
 %% 为每颗可能见到的卫星分配跟踪通道 (#)
@@ -103,11 +104,11 @@ pos = NaN(1,8); %定位结果，计算电离层时会用到
 %% 创建接收机输出存储空间
 % 分配msToProcess/dtpos行，每到时间点输出一次，最后根据接收机状态删除多余的行
 nRow = msToProcess/dtpos;
-output_ta = zeros(nRow,2); %时间，ms，第二列为接收机状态
-output_pos = zeros(nRow,8); %定位，[位置、速度、钟差、钟频差]
-output_sv = zeros(svN,8,nRow); %卫星信息，[位置、伪距、速度、伪距率]
-output_df = zeros(nRow,1); %修正用的钟频差（滤波后的钟频差）
 no = 1; %指向当前存储行
+output_ta  = zeros(nRow,2); %第一列为时间（s），第二列为接收机状态
+output_pos = zeros(nRow,8); %定位，[位置、速度、钟差、钟频差]
+output_sv  = zeros(svN,8,nRow); %卫星信息，[位置、伪距、速度、伪距率]
+output_df  = zeros(nRow,1); %修正用的钟频差（滤波后的钟频差）
 
 %% 打开文件，创建进度条 (#)
 fileID = fopen(file_path, 'r');
@@ -181,9 +182,10 @@ for t=1:msToProcess %名义上的时间，以采样点数计算
                 trackResults(k).I_Q(n,:)          = I_Q;
                 trackResults(k).disc(n,:)         = disc;
                 trackResults(k).bitStartFlag(n,:) = bitStartFlag;
-                trackResults(k).CN0(n,:)          = channels(k).CN0;
+                trackResults(k).CN0(n,1)          = channels(k).CN0;
+                trackResults(k).CN0(n,2)          = channels(k).CN0i;
                 trackResults(k).carrAcc(n,:)      = channels(k).carrAcc;
-                trackResults(k).Px(n,:)           = sqrt(diag(channels(k).Px)')*3;
+                trackResults(k).strength(n,:)     = channels(k).strength;
                 trackResults(k).n                 = n + 1;
             end
         end
@@ -197,15 +199,17 @@ for t=1:msToProcess %名义上的时间，以采样点数计算
         %% 1.计算卫星位置、速度，测量伪距、伪距率
         sv = NaN(svN,8);
         for k=1:svN
-            if channels(k).state==2 %检查所有通道状态，对跟踪到的通道计算卫星信息，[位置、伪距、速度、伪距率]
+            if channels(k).state==2 && channels(k).CN0>35 %有一定强度才算
                 dn = mod(buffHead-channels(k).trackDataTail+1, buffSize) - 1; %trackDataTail恰好超前buffHead一个时，dn=-1
                 dtc = dn / sampleFreq_real; %当前采样时间与跟踪点的时间差
+                dt = dtc - dtp; %定位点到跟踪点的时间差
                 carrFreq = channels(k).carrFreq + 1575.42e6*deltaFreq; %修正后的载波频率
                 codeFreq = (carrFreq/1575.42e6+1)*1.023e6; %通过载波频率计算的码频率
-                codePhase = channels(k).remCodePhase + (dtc-dtp)*codeFreq; %定位点码相位
+                codePhase = channels(k).remCodePhase + dt*codeFreq; %定位点码相位
                 ts0 = [floor(channels(k).ts0/1e3), mod(channels(k).ts0,1e3), 0] + [0, floor(codePhase/1023), mod(codePhase/1023,1)*1e3]; %定位点的码发射时间
                 [sv(k,:),~] = sv_ecef(channels(k).ephemeris, tp, ts0); %根据星历计算卫星[位置、伪距、速度]
                 sv(k,8) = -carrFreq/1575.42e6*299792458;%载波频率转化为速度
+                sv(k,8) = sv(k,8) + channels(k).ephemeris(9)*299792458; %修卫星钟频差，卫星钟快测的伪距率偏小
                 % 电离层延迟校正
                 if ~isnan(ion(1)) %存在电离层参数
                     if receiverState==1 && ~isnan(pos(1)) %有定位信息，实际上是上一定位时刻
@@ -224,8 +228,7 @@ for t=1:msToProcess %名义上的时间，以采样点数计算
         end
         
         %% 2.定位
-        sv_visible = sv(~isnan(sv(:,1)),:); %提取可见卫星
-        pos = pos_solve(sv_visible); %定位，如果不够4颗卫星返回8个NaN
+        pos = pos_solve(sv(~isnan(sv(:,1)),:)); %提取可见卫星定位，如果不够4颗卫星返回8个NaN
         
         %% 3.时钟反馈修正
         if receiverState==1 && ~isnan(pos(7)) %接收机已完成初始化且钟差不为NaN
@@ -235,11 +238,11 @@ for t=1:msToProcess %名义上的时间，以采样点数计算
         end
         
         %% 4.存储输出
-        output_ta(no,1) = tp(1) + tp(2)/1e3 + tp(3)/1e6; %时间戳，s
-        output_ta(no,2) = receiverState; %接收机状态
-        output_pos(no,:) = pos;
+        output_ta(no,1)   = tp(1) + tp(2)/1e3 + tp(3)/1e6; %时间戳，s
+        output_ta(no,2)   = receiverState; %接收机状态
+        output_pos(no,:)  = pos;
         output_sv(:,:,no) = sv;
-        output_df(no) = deltaFreq;
+        output_df(no)     = deltaFreq;
         
         %% 5.检查初始化
         if receiverState==0 && ~isnan(pos(7))
@@ -283,7 +286,7 @@ output_df(index,:)    = [];
 
 %% 打印通道日志（*）
 clc
-print_log('.\temp\log.txt', svList);
+print_log([result_path,'\log.txt'], svList);
 
 %% 保存星历 (#)
 % 每次运行完都会保存，有新星历自动添加
@@ -333,8 +336,8 @@ for k=1:svN
     % 画图
     plot(ax1, trackResults(k).I_Q(1001:end,1),trackResults(k).I_Q(1001:end,4), 'LineStyle','none', 'Marker','.') %I/Q图
     plot(ax2, trackResults(k).dataIndex/sampleFreq, trackResults(k).I_Q(:,1)) %I_P图
-    index = find(trackResults(k).CN0~=0);
-    plot(ax3, trackResults(k).dataIndex(index)/sampleFreq, trackResults(k).CN0(index), 'LineWidth',2) %载噪比，只画不为0的
+    index = find(trackResults(k).CN0(:,1)~=0);
+    plot(ax3, trackResults(k).dataIndex(index)/sampleFreq, trackResults(k).CN0(index,1), 'LineWidth',2) %载噪比，只画不为0的
     plot(ax4, trackResults(k).dataIndex/sampleFreq, trackResults(k).carrFreq, 'LineWidth',1.5) %载波频率
     plot(ax5, trackResults(k).dataIndex/sampleFreq, trackResults(k).carrAcc) %视线方向加速度
     
@@ -356,14 +359,22 @@ end
 clearvars k screenSize ax1 ax2 ax3 ax4 ax5 index
 
 %% 清除变量（*）
-clearvars -except sampleFreq msToProcess ...
-                  p0 tf svList svN ...
-                  channels trackResults ...
-                  output_ta output_pos output_sv output_df ...
-                  ephemeris ion
+keepVariables = { ...
+'sampleFreq'; 'msToProcess';
+'p0'; 'tf'; 'svList'; 'svN'; %为了画星座图
+'channels'; 'trackResults'; %天线跟踪信息
+'ephemeris'; 'ion'; %星历
+'output_ta'; 'output_pos'; 'output_sv'; 'output_df'; 
+'file';
+};
+clearvars('-except', keepVariables{:})
 
 %% 保存结果 (#)
-save .\temp\result_single.mat
+% 以时间命名
+t0 = clock;
+time_str = sprintf('%4d%02d%02d_%02d%02d%02d', t0(1),t0(2),t0(3),t0(4),t0(5),floor(t0(6)));
+result_path = fileread('.\temp\resultPath.txt');
+save([result_path,'\',time_str,'__single__',file(1:end-8),'.mat'])
 
 %% 计时结束 (#)
 toc

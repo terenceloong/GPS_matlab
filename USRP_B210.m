@@ -4,7 +4,7 @@ clc;
 %% 配置
 exe_path = [strtok(cd,':'),':\GNSS\USRP_B210\Release']; %可执行文件路径，strtok(cd,':')得到盘符
 data_path = fileread('.\temp\dataPath.txt'); %数据存储路径
-sample_time = 60*5; %采样时间，s
+sample_time = 60*10; %采样时间，s
 channel = 2; %通道数量                                                                                       
 gain = 46; %增益，dB
 ref = 1; %是否使用外部时钟

@@ -1,20 +1,20 @@
-% ²âÊÔ¿ª»·µ¼º½ÂË²¨Æ÷
+% ²âÊÔ¿ª»·µ¼º½ÂË²¨Æ÷£¨·ÂÕæ£©
 clear
 clc
 
-%% ·ÂÕæÊ±¼ä
+%% ·ÂÕæÊ±¼ä (!)
 T = 200;        % ×ÜÊ±¼ä£¬s
 dt = 0.01;      % Ê±¼ä¼ä¸ô£¬s
 n = T / dt;     % ×Ü·ÂÕæµãÊı
 t = (1:n)'*dt;  % Ê±¼äĞòÁĞ£¨ÁĞÏòÁ¿£©
 
-%% ¹ßĞÔÆ÷¼şÖ¸±ê
+%% ¹ßĞÔÆ÷¼şÖ¸±ê (!)
 sigma_gyro = 0.15;             % ÍÓÂİÒÇÔëÉù±ê×¼²î£¬deg/s
 sigma_acc = 1.5e-3;            % ¼ÓËÙ¶È¼ÆÔëÉù±ê×¼²î£¬g
 bias_gyro = [0.2, 0, 0.6] *1;  % ÍÓÂİÒÇ³£ÖµÁãÆ«£¬deg/s
 bias_acc = [1, 0, 2]*1e-3 *1;  % ¼ÓËÙ¶È¼Æ³£ÖµÁãÆ«£¬g
 
-%% ½ÓÊÕ»ú²ÎÊı
+%% ½ÓÊÕ»ú²ÎÊı (!)
 sigma_rho = 3;            % Î±¾à²âÁ¿ÔëÉù±ê×¼²î£¬m
 sigma_rhodot = 0.1;       % Î±¾àÂÊ²âÁ¿ÔëÉù±ê×¼²î£¬m/s
 sigma_dphase = 0.004;     % ÏàÎ»²î²âÁ¿ÔëÉù±ê×¼²î£¬circ
@@ -24,12 +24,12 @@ dpath = 0.2;              % Ë«ÌìÏßÂ·¾¶²î£¬circ
 c = 299792458;            % ¹âËÙ£¬m/s
 lamda = c / 1575.42e6;    % ²¨³¤£¬m
 
-%% ½ÓÊÕ»úÎ»ÖÃ
+%% ½ÓÊÕ»úÎ»ÖÃ (!)
 lat = 46;      % Î³¶È£¬deg
 lon = 126;     % ¾­¶È£¬deg
 h = 200;       % ¸ß¶È£¬m
 
-%% »ùÏß
+%% »ùÏß (!)
 bl_psi = 50;       % »ùÏßº½Ïò½Ç£¬deg
 bl_theta = 00;     % »ùÏß¸©Ñö½Ç£¬deg
 bl_gamma = 00;     % »ùÏß¹ö×ª½Ç£¬deg
@@ -109,7 +109,7 @@ para.Q = diag([[1,1,1]*sigma_gyro /180*pi, ...                 % ×ËÌ¬Ò»²½Ô¤²â²»È
 para.R_rho    = sigma_rho^2;
 para.R_rhodot = sigma_rhodot^2;
 para.R_dphase = sigma_dphase^2;
-NF = navFilter_open([lat, lon, h], ...
+NF = navFilter_tight_open_dphase([lat, lon, h], ...
                [0, 0, 0] + [1, -1, 0.5], ...
                [bl_psi, bl_theta, bl_gamma] + [1, -1, 1], ...
                dt, lamda, bl_length, para);
@@ -124,7 +124,7 @@ for k=1:n
     sv(:,9) = sv(:,9) + randn(svN,1)*sigma_dphase + dpath; % ÏàÎ»²î¼ÓÔëÉù
     
     % ¸üĞÂµ¼º½ÂË²¨Æ÷
-    NF = NF.update(imu(k,:), sv);
+    NF = NF.update(imu(k,:), sv(:,1:8), sv(:,9));
     
     % ´æ´¢µ¼º½½á¹û
     output_filter(k,1:3) = NF.pos;

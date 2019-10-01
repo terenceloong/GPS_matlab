@@ -12,8 +12,8 @@ p0 = [45.73104, 126.62481, 209]; %经纬度保留小数点后5位，高度保留到整数
 rp = lla2ecef(p0); %ecef
 
 %% 数据范围 ($)
-% range = 1:size(sv_info,3); %所有点
-range = 1:40000; %从第几个点到第几个点
+range = 1:size(sv_info,3); %所有点
+% range = 1:6000; %从第几个点到第几个点
 
 %% 输入数据截取
 sv_info = sv_info(:,:,range);

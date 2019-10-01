@@ -14,6 +14,6 @@ trackResult.disc(n:end,:)         = [];
 trackResult.bitStartFlag(n:end,:) = [];
 trackResult.CN0(n:end,:)          = [];
 trackResult.carrAcc(n:end,:)      = [];
-trackResult.Px(n:end,:)           = [];
+trackResult.strength(n:end,:)     = [];
 
 end

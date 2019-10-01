@@ -1,15 +1,26 @@
-function nav_yaw_nacc()
-% 使用航向量测、不带加计零偏的滤波器进行滤波
+function nav_tight_dphase_level_nacc()
+% 紧组合后处理程序，使用相位差的水平投影作量测，不包含加速度计零偏，包含路径差，15维模型
 % 标$的换数据时需要修改
 % 看伪距、伪距率噪声运行receiver_noise.m
-% 看航向测量噪声运行att_measure.m
-%==静止时水平姿态稳定，精度依赖于加计零偏大小，为了抵抗加计零偏对速度的影响，需要将速度对应的Q放大
+% 看相位差测量噪声，看相位差曲线
+
+% ** 先运行att_measure.m
+% ** 运行前注意：基线长度、数据范围、滤波器参数
+
+% 结果：相位差水平投影对俯仰角没有测量作用，俯仰角估计稳定
+%       为了抵抗加计零偏对速度的影响，需要将速度对应的Q放大
+%       动起来之后速度不对，尚不知道什么原因，将相位差量测的R放大可以将速度勉强拉正，可能是相位差没分配权值
+% 0726数据验证通过
 
 %% 导入数据 ($)
 imu_data = evalin('base', 'imu_data'); %IMU数据
 ta = evalin('base', 'output_ta(:,1)'); %时间序列
-output_sv = evalin('base', 'output_sv_A(:,1:8,:)'); %卫星信息，[x,y,z, rho, vx,vy,vz, rhodot]
+output_sv = evalin('base', 'output_sv_A'); %卫星信息，[x,y,z, rho, vx,vy,vz, rhodot]
 BLs = evalin('base', 'BLs'); %姿态测量结果
+dphase = evalin('base', 'output_dphase_modified'); %整周修正后的相位差
+
+bl = 1.3; %基线长度
+lamda = 299792458 / 1575.42e6; %波长
 
 %% 数据范围 ($)
 range = 1:length(ta); %所有点
@@ -19,6 +30,7 @@ range = 1:length(ta); %所有点
 ta = ta(range);
 output_sv = output_sv(:,:,range);
 BLs = BLs(range,:);
+dphase = dphase(range,:);
 index = find(round(imu_data(:,1)*1e4)==round(ta(1)*1e4),1); %IMU数据索引
 imu_data = imu_data(index+(1:length(range))-1,2:7); %删除第一列时间
 
@@ -29,8 +41,9 @@ filter_nav    = zeros(n,9);  %滤波器导航输出
 filter_bias   = zeros(n,6);  %零偏估计
 filter_dtr    = zeros(n,1);  %钟差估计
 filter_dtv    = zeros(n,1);  %钟频差估计
-filter_P      = zeros(n,14); %理论估计标准差
-filter_gps    = zeros(n,10); %直接卫星解算，最后两列是航向角和俯仰角
+filter_tau    = zeros(n,1);  %路径差估计
+filter_P      = zeros(n,15); %理论估计标准差
+filter_gps    = zeros(n,11); %直接卫星解算，最后三列是航向角、俯仰角和路径差
 
 %% 初始位置
 sv = output_sv(:,:,1);
@@ -48,6 +61,7 @@ para.P = diag([[1,1,1]*1 /180*pi, ...     %初始姿态误差，rad
                [1/a,secd(lat)/a,1]*5, ... %初始位置误差，[rad,rad,m]
                2e-8 *3e8, ...             %初始钟差距离，m
                3e-9 *3e8, ...             %初始钟频差速度，m/s
+               0.1, ...                   %初始路径差载波周数，circ
                [1,1,1]*0.2 /180*pi])^2;   %初始陀螺仪零偏，rad/s
 para.Q = diag([[1,1,1]*0.15 /180*pi, ...
                ... %姿态一步预测不确定度，rad/s（取陀螺仪噪声标准差）
@@ -59,22 +73,24 @@ para.Q = diag([[1,1,1]*0.15 /180*pi, ...
                ... %钟差距离一步预测不确定度，m/s（取钟频差速度漂移的积分或半积分）
                0.03e-9 *3e8, ...
                ... %钟频差速度漂移，m/s/s（需根据所用晶振和估计曲线精心调节）
+               0.002, ...
+               ... %路径差漂移，circ/s（需根据估计曲线精心调节）
                [1,1,1]*0.01 /180*pi])^2 * dt^2;
-                   %陀螺仪零偏漂移，rad/s/s（需根据估计曲线精心调节）
+               ... %陀螺仪零偏漂移，rad/s/s（需根据估计曲线精心调节）
 para.R_rho    = 4^2;
 para.R_rhodot = 0.04^2;
-para.R_psi = (0.1 /180*pi)^2;
-NF = navFilter_open_yaw_nacc([lat, lon, h], ...
+para.R_dphase = 0.01^2;
+NF = navFilter_tight_open_dphase_level_nacc([lat, lon, h], ...
                     [0, 0, 0] + [1, -1, 0.5]*0, ...
                     [BLs(1,1), BLs(1,2), 0] + [1, -1, 1]*0, ...
-                    dt, para);
+                    dt, lamda, bl, para);
 
 %% 计算
 for k=1:n
     % 更新导航滤波器
-    sv = output_sv(:,:,k);
-    sv(isnan(sv(:,1)),:) = []; %删除无数据的卫星
-    NF = NF.update(imu_data(k,:), sv, BLs(k,1));
+    index = find(~isnan(output_sv(:,1,k))); %有数据的索引
+    sv = output_sv(index,:,k);
+    NF = NF.update(imu_data(k,:), sv, dphase(k,index)');
     
     % 存储导航结果
     filter_nav(k,1:3) = NF.pos;
@@ -83,7 +99,8 @@ for k=1:n
     filter_bias(k,:) = NF.bias;
     filter_dtr(k) = NF.dtr;
     filter_dtv(k) = NF.dtv;
-    filter_gps(k,:) = [pos_solve(sv), BLs(k,1:2)];
+    filter_tau(k) = NF.tau;
+    filter_gps(k,:) = [pos_solve(sv), BLs(k,[1,2,4])];
     
     % P阵
     filter_P(k,:) = sqrt(diag(NF.Px)');
@@ -103,30 +120,19 @@ for k=1:n
 end
 
 %% 输出数据
-assignin('base', 'filter_nav', filter_nav)
+assignin('base', 'filter_nav',  filter_nav)
 assignin('base', 'filter_bias', filter_bias)
-assignin('base', 'filter_dtr', filter_dtr)
-assignin('base', 'filter_dtv', filter_dtv)
-assignin('base', 'filter_P', filter_P)
-assignin('base', 'filter_gps', filter_gps)
+assignin('base', 'filter_dtr',  filter_dtr)
+assignin('base', 'filter_dtv',  filter_dtv)
+assignin('base', 'filter_tau',  filter_tau)
+assignin('base', 'filter_P',    filter_P)
+assignin('base', 'filter_gps',  filter_gps)
 filter_ta = ta;
-assignin('base', 'filter_ta', filter_ta)
+assignin('base', 'filter_ta',   filter_ta)
 filter_imu = imu_data;
-assignin('base', 'filter_imu', filter_imu)
+assignin('base', 'filter_imu',  filter_imu)
 
-%% 画位置
-figure_filter_pos;
-
-%% 画速度
-figure_filter_vel;
-
-%% 画姿态
-figure_filter_att;
-
-%% 画陀螺仪零偏
-figure_filter_gyrobias;
-
-%% 画钟差钟频差
-figure_filter_clock;
+%% 画图
+figure_tight_result;
 
 end

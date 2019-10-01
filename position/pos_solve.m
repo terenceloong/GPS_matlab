@@ -34,7 +34,7 @@ while 1
 %     if cnt == 10
 %         error('Position iteration exceeds the threshold!');
 %     end
-    if norm(x-x0)<1e-4
+    if norm(x-x0)<1e-3
         break
     end
     x0 = x;

@@ -151,7 +151,8 @@ if exist('Rm', 'var')
             taus(k) = taus(k) - 1;
         end
     end
-    tau = mod(mean(taus),1);
+%     tau = mod(mean(taus),1);
+    tau = mod(mean(taus)+0.5,1) - 0.5;
     Rx = [Rm; tau];
 else
     Rx = [NaN; NaN; NaN; NaN];

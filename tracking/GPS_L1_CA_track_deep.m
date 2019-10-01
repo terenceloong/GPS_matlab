@@ -1,4 +1,4 @@
-function [ch, I_Q, disc, bitStartFlag] = GPS_L1_CA_track(ch, sampleFreq, buffSize, rawSignal, logID)
+function [ch, I_Q, disc, bitStartFlag] = GPS_L1_CA_track_deep(ch, sampleFreq, buffSize, rawSignal, logID)
 
 bitStartFlag = 0;
 
@@ -126,6 +126,26 @@ switch trackStage
         codeNco = DLL.Int + DLL.K1*codeError;
         codeFreq = DLL.Int;
         
+	case 'D' %<<====深组合码环和锁相环都开环
+        %----PLL
+        if ch.strength==2 %强信号时使用二阶环（比例积分控制）得到载波频率测量
+            PLL.Int = PLL.Int + PLL.K2*carrError*timeInt + ch.carrAcc*timeInt; %锁相环积分器
+            if PLL.Int>PLL.upper %积分饱和
+                PLL.Int = PLL.upper;
+            elseif PLL.Int<PLL.lower
+                PLL.Int = PLL.lower;
+            end
+            carrNco = PLL.Int + PLL.K1*carrError;
+            carrFreq = PLL.Int;
+        else %弱信号时使用频率辅助的一阶环（比例控制）跟踪载波相位
+            carrNco = PLL.Int + PLL.K1*carrError;
+%             carrNco = PLL.Int + 8*carrError;
+            carrFreq = PLL.Int;
+        end
+        %----DLL
+        codeNco = 1.023e6 + carrFreq/1540; %码频率直接由载波频率计算
+        codeFreq = 1.023e6 + carrFreq/1540;
+        
 	otherwise
 end
 
@@ -197,6 +217,14 @@ switch msgStage %I, B, W, H, C, E
                 CN0 = 10; %计算载噪比的最小值为10，刚初始化时为0
             end
             ch.CN0 = CN0;
+            %====没进深组合时失锁要放弃通道
+            if CN0<30
+                if trackStage=='T'
+                    ch.state = 0;
+                    fprintf(logID, '%2d: ***Abandon at %.8fs\r\n', ...
+                            ch.PRN, ch.dataIndex/sampleFreq);
+                end
+            end
             %====计算瞬时载噪比
             Z = NBP / WBP;
             S = (Z-1) / (pointInt-Z) / timeInt;
@@ -214,7 +242,7 @@ switch msgStage %I, B, W, H, C, E
             end
             %====更新信号稳定计数器
             stableCnt = ch.stableCnt;
-            if CN0i>=35 && through_flag==0 %载噪比大于阈值并且无穿越时，计数器加1，计数器最大值为50（1s）
+            if CN0i>=30 && through_flag==0 %载噪比大于阈值并且无穿越时，计数器加1，计数器最大值为50（1s）
                 if (stableCnt+1)>50
                     stableCnt = 50; %表示信号已经稳定了1s
                 else
@@ -246,14 +274,7 @@ switch msgStage %I, B, W, H, C, E
             elseif strength==0 %失锁
                 if CN0>=32
                     ch.strength = 1;
-                    ch.loseCnt = 0; %失锁计数器清零
                     fprintf(logID, '%2d: Weak signal at %.8fs\r\n', ...
-                            ch.PRN, ch.dataIndex/sampleFreq);
-                end
-                ch.loseCnt = ch.loseCnt + 1;
-                if ch.loseCnt==250 %失锁5s放弃通道
-                    ch.state = 0;
-                    fprintf(logID, '%2d: ***Abandon at %.8fs\r\n', ...
                             ch.PRN, ch.dataIndex/sampleFreq);
                 end
             end
@@ -283,7 +304,6 @@ switch msgStage %I, B, W, H, C, E
                             bits = dec2bin(bits>0)'; %±1数组转化为01字符串
                             TOW = bin2dec(bits); %01字符串转换为十进制数
                             ch.ts0 = (TOW*6+0.16)*1000; %ms，0.16=8/50
-                            ch.inverseFlag = frameBuff(62); %相位翻转标志，1表示翻转，-1表示不翻转
                             if ~isnan(ch.ephemeris(1))
                                 ch.state = 2; %更新状态（知道码发射时间，而且有星历）
                             end
@@ -315,7 +335,7 @@ switch msgStage %I, B, W, H, C, E
 %                             bits = -frameBuff(62) * frameBuff; %电平翻转
 %                             bits = dec2bin(bits>0)'; %±1数组转化为01字符串
 %                             fprintf(logID, ['%2d: ',bits(1:2),'\r\n'], ch.PRN);
-%                             for k=1:50 %将错误的电文输出，查找电文错误原因（静态测量时用）
+%                             for k=1:50 %将错误的电文输出，查找电文错误原因
 %                                 fprintf(logID, ['%2d: ',bits((k-1)*30+2+(1:30)),'\r\n'], ch.PRN);
 %                             end
                             %-------------------------------------------------------------%
