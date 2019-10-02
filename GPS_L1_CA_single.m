@@ -35,7 +35,7 @@ result_path = fileread('.\temp\resultPath.txt'); %存储结果的路径
 logID = fopen([result_path,'\log.txt'], 'w'); %创建日志文件（时间顺序的日志）
 
 %% 运行时间
-msToProcess = 300*1*1000; %处理总时间
+msToProcess = 30*1*1000; %处理总时间
 sample_offset = 0*4e6; %抛弃前多少个采样点
 sampleFreq = 4e6; %接收机采样频率
 

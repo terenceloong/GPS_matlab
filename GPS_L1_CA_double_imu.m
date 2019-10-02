@@ -45,7 +45,7 @@ logID_A = fopen([result_path,'\logA.txt'], 'w'); %创建日志文件（时间顺序的日志）
 logID_B = fopen([result_path,'\logB.txt'], 'w');
 
 %% 运行时间
-msToProcess = 60*5*1000; %处理总时间
+msToProcess = 40*1*1000; %处理总时间
 sample_offset = 0*4e6; %抛弃前多少个采样点
 sampleFreq = 4e6; %接收机采样频率
 

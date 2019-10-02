@@ -1,8 +1,9 @@
-function embiguity_search()
+function ambiguity_search()
 % 所有点做模糊度搜索，看模糊度搜索成功率，同时标定基线
 % 不输出结果，只画图
 % 可以设置数据范围
 % 标$的换数据时需要修改
+% 运行前注意：基线长度、数据范围
 
 %% 导入数据 ($)
 svList = evalin('base', 'svList'); %卫星编号列表
@@ -17,8 +18,8 @@ tr = [-5,5]; %俯仰角范围，deg
 lamda = 299792458 / 1575.42e6; %波长
 
 %% 数据范围 ($)
-range = 1:size(output_pos,1); %所有点
-% range = 101:1000; %从第几个点到第几个点
+% range = 1:size(output_pos,1); %所有点
+range = 1:2000; %从第几个点到第几个点
 
 %% 输入数据截取
 output_pos = output_pos(range,:);
@@ -33,7 +34,7 @@ BLs = NaN(n,4); %基线测量结果，[航向角、俯仰角、基线长度、路径差]，[deg,deg,m,ci
 
 %% 计算
 for k=1:n
-    pos = output_pos(k,1:3);
+    pos = output_pos(k,:);
     Cen = dcmecef2ned(pos(1), pos(2));
     rp = lla2ecef(pos);
     rs = output_sv(:,1:3,k);

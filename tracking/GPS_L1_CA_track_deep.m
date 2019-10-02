@@ -242,7 +242,7 @@ switch msgStage %I, B, W, H, C, E
             end
             %====更新信号稳定计数器
             stableCnt = ch.stableCnt;
-            if CN0i>=30 && through_flag==0 %载噪比大于阈值并且无穿越时，计数器加1，计数器最大值为50（1s）
+            if CN0i>=32 && through_flag==0 %载噪比大于阈值并且无穿越时，计数器加1，计数器最大值为50（1s）
                 if (stableCnt+1)>50
                     stableCnt = 50; %表示信号已经稳定了1s
                 else

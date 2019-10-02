@@ -1,11 +1,11 @@
 % ÒÆ³ýº¯ÊýÂ·¾¶
 
 rmpath('acquisition')
-rmpath('app')
+rmpath('ambiguity')
 rmpath('analysis')
+rmpath('app')
 rmpath('BD910')
 rmpath('display')
-rmpath('embiguity')
 rmpath('parsing')
 rmpath('position')
 rmpath('shortcut')

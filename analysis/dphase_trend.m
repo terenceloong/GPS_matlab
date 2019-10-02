@@ -24,7 +24,7 @@ PDr = NaN(n,svN); %使用参考基线算的相位差
 
 %% 计算
 for k=1:n
-    pos = output_pos(k,1:3);
+    pos = output_pos(k,:);
     Cen = dcmecef2ned(pos(1), pos(2));
     rp = lla2ecef(pos);
     rs = output_sv(:,1:3,k);

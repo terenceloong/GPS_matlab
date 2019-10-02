@@ -36,7 +36,7 @@ logID_A = fopen([result_path,'\logA.txt'], 'w'); %创建日志文件（时间顺序的日志）
 logID_B = fopen([result_path,'\logB.txt'], 'w');
 
 %% 运行时间 (!)
-msToProcess = 60*5*1000; %处理总时间
+msToProcess = 60*10*1000; %处理总时间
 sample_offset = 0*4e6; %抛弃前多少个采样点
 sampleFreq = 4e6; %接收机采样频率
 
@@ -314,11 +314,15 @@ for t=1:msToProcess %名义上的时间，以采样点数计算
             end
         end
         %----判断通道符号
-        if bitStartFlag_A~=0 && bitStartFlag_B~=0
-            if I_P_A*I_P_B>=0
-                chSign(k) = 0;
-            else
-                chSign(k) = 0.5;
+        % 处于连续跟踪的通道不改变通道符号，因为通道符号可能有误判
+        % 进入强信号状态之前的符号判断一定是正确的
+        if isnan(dphase_mask(k))
+            if bitStartFlag_A~=0 && bitStartFlag_B~=0
+                if I_P_A*I_P_B>=0
+                    chSign(k) = 0;
+                else
+                    chSign(k) = 0.5;
+                end
             end
         end
     end %end for k=1:svN

@@ -33,7 +33,7 @@ PDm = NaN(n,svN); %整周模糊度修正后的相位差（实测相位差）
 %% 计算
 N = NaN(svN,1); %所有通道的相位整周误差，相位差修正时减去该值
 for k=1:n
-    pos = output_pos(k,1:3);
+    pos = output_pos(k,:);
     Cen = dcmecef2ned(pos(1), pos(2));
     rp = lla2ecef(pos);
     rs = output_sv(:,1:3,k);
