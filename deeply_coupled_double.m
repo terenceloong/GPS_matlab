@@ -1,17 +1,17 @@
-% Ë«ÌìÏßGPS/INSÉî×éºÏ³ÌĞò
+% åŒå¤©çº¿GPS/INSæ·±ç»„åˆç¨‹åº
 
 clear
 clc
 
-%% ¼ÓÔØIMUÊı¾İ
+%% åŠ è½½IMUæ•°æ®
 imu_data = IMU_parse();
 close gcf
 close gcf
 close gcf
 
-%% Ñ¡ÔñÎÄ¼ş
-default_path = fileread('.\temp\dataPath.txt'); %Êı¾İÎÄ¼şËùÔÚÄ¬ÈÏÂ·¾¶
-[file, path] = uigetfile([default_path,'\*.dat'], 'Ñ¡ÔñGPSÊı¾İÎÄ¼ş'); %ÎÄ¼şÑ¡Ôñ¶Ô»°¿ò£¬ÏŞÖÆÎª.datÎÄ¼ş
+%% é€‰æ‹©æ–‡ä»¶
+default_path = fileread('.\temp\dataPath.txt'); %æ•°æ®æ–‡ä»¶æ‰€åœ¨é»˜è®¤è·¯å¾„
+[file, path] = uigetfile([default_path,'\*.dat'], 'é€‰æ‹©GPSæ•°æ®æ–‡ä»¶'); %æ–‡ä»¶é€‰æ‹©å¯¹è¯æ¡†ï¼Œé™åˆ¶ä¸º.datæ–‡ä»¶
 if file==0
     disp('Invalid file!');
     return
@@ -22,107 +22,107 @@ end
 file_path = [path, file];
 file_path_A = [file_path(1:end-5),'1.dat'];
 file_path_B = [file_path(1:end-5),'2.dat'];
-plot_gnss_file(file_path_A); %ÏÔÊ¾Ç°0.1sÊı¾İ
+plot_gnss_file(file_path_A); %æ˜¾ç¤ºå‰0.1sæ•°æ®
 plot_gnss_file(file_path_B);
 drawnow
 
-%% ¼ÆÊ±¿ªÊ¼
+%% è®¡æ—¶å¼€å§‹
 tic
 
-%% ´´½¨ÈÕÖ¾ÎÄ¼ş
-fclose('all'); %¹Ø±ÕÖ®Ç°´ò¿ªµÄËùÓĞÎÄ¼ş
-result_path = fileread('.\temp\resultPath.txt'); %´æ´¢½á¹ûµÄÂ·¾¶
-logID_A = fopen([result_path,'\logA.txt'], 'w'); %´´½¨ÈÕÖ¾ÎÄ¼ş£¨Ê±¼äË³ĞòµÄÈÕÖ¾£©
+%% åˆ›å»ºæ—¥å¿—æ–‡ä»¶
+fclose('all'); %å…³é—­ä¹‹å‰æ‰“å¼€çš„æ‰€æœ‰æ–‡ä»¶
+result_path = fileread('.\temp\resultPath.txt'); %å­˜å‚¨ç»“æœçš„è·¯å¾„
+logID_A = fopen([result_path,'\logA.txt'], 'w'); %åˆ›å»ºæ—¥å¿—æ–‡ä»¶ï¼ˆæ—¶é—´é¡ºåºçš„æ—¥å¿—ï¼‰
 logID_B = fopen([result_path,'\logB.txt'], 'w');
 
-%% ÔËĞĞÊ±¼ä (!)
-msToProcess = 60*10*1000; %´¦Àí×ÜÊ±¼ä
-sample_offset = 0*4e6; %Å×ÆúÇ°¶àÉÙ¸ö²ÉÑùµã
-sampleFreq = 4e6; %½ÓÊÕ»ú²ÉÑùÆµÂÊ
+%% è¿è¡Œæ—¶é—´ (!)
+msToProcess = 60*10*1000; %å¤„ç†æ€»æ—¶é—´
+sample_offset = 0*4e6; %æŠ›å¼ƒå‰å¤šå°‘ä¸ªé‡‡æ ·ç‚¹
+sampleFreq = 4e6; %æ¥æ”¶æœºé‡‡æ ·é¢‘ç‡
 
-%% Ô¤Éè²ÎÊı (!)
-p0 = [45.730952, 126.624970, 212]; %²Î¿¼Î»ÖÃ
-bl = 1.30; %»ùÏß³¤¶È
-br = 0.02; %»ùÏß³¤¶È·¶Î§
-tr = [-5,5]; %³õÊ¼¸©Ñö½Ç·¶Î§£¬deg
-circ_limit = 1000; %ÏàÎ»²îÊıÖµ·¶Î§
+%% é¢„è®¾å‚æ•° (!)
+p0 = [45.730952, 126.624970, 212]; %å‚è€ƒä½ç½®
+bl = 1.30; %åŸºçº¿é•¿åº¦
+br = 0.02; %åŸºçº¿é•¿åº¦èŒƒå›´
+tr = [-5,5]; %åˆå§‹ä¿¯ä»°è§’èŒƒå›´ï¼Œdeg
+circ_limit = 1000; %ç›¸ä½å·®æ•°å€¼èŒƒå›´
 circ_half = circ_limit/2;
 
-%% ÂË²¨Æ÷²ÎÊı (!)
+%% æ»¤æ³¢å™¨å‚æ•° (!)
 lat = p0(1);
 dt0 = 0.01;
-a = 6371000; %µØÇò°ë¾¶
-para.P = diag([[1,1,1]*1 /180*pi, ...     %³õÊ¼×ËÌ¬Îó²î£¬rad
-               [1,1,1]*1, ...             %³õÊ¼ËÙ¶ÈÎó²î£¬m/s
-               [1/a,secd(lat)/a,1]*5, ... %³õÊ¼Î»ÖÃÎó²î£¬[rad,rad,m]
-               2e-8 *3e8, ...             %³õÊ¼ÖÓ²î¾àÀë£¬m
-               3e-9 *3e8, ...             %³õÊ¼ÖÓÆµ²îËÙ¶È£¬m/s
-               [1,1,1]*0.2 /180*pi, ...   %³õÊ¼ÍÓÂİÒÇÁãÆ«£¬rad/s
-               [1,1,1]*2e-3 *9.8])^2;     %³õÊ¼¼ÓËÙ¶È¼ÆÁãÆ«£¬m/s^2
+a = 6371000; %åœ°çƒåŠå¾„
+para.P = diag([[1,1,1]*1 /180*pi, ...     %åˆå§‹å§¿æ€è¯¯å·®ï¼Œrad
+               [1,1,1]*1, ...             %åˆå§‹é€Ÿåº¦è¯¯å·®ï¼Œm/s
+               [1/a,secd(lat)/a,1]*5, ... %åˆå§‹ä½ç½®è¯¯å·®ï¼Œ[rad,rad,m]
+               2e-8 *3e8, ...             %åˆå§‹é’Ÿå·®è·ç¦»ï¼Œm
+               3e-9 *3e8, ...             %åˆå§‹é’Ÿé¢‘å·®é€Ÿåº¦ï¼Œm/s
+               [1,1,1]*0.2 /180*pi, ...   %åˆå§‹é™€èºä»ªé›¶åï¼Œrad/s
+               [1,1,1]*2e-3 *9.8])^2;     %åˆå§‹åŠ é€Ÿåº¦è®¡é›¶åï¼Œm/s^2
 para.Q = diag([[1,1,1]*0.15 /180*pi, ...
-               ... %×ËÌ¬Ò»²½Ô¤²â²»È·¶¨¶È£¬rad/s£¨È¡ÍÓÂİÒÇÔëÉù±ê×¼²î£©
+               ... %å§¿æ€ä¸€æ­¥é¢„æµ‹ä¸ç¡®å®šåº¦ï¼Œrad/sï¼ˆå–é™€èºä»ªå™ªå£°æ ‡å‡†å·®ï¼‰
                [1,1,1]*4e-3 *9.8, ...
-               ... %ËÙ¶ÈÒ»²½Ô¤²â²»È·¶¨¶È£¬m/s/s£¨ÒòÎª´æÔÚÁãÆ«£¬È¡¼ÓËÙ¶È¼ÆÔëÉù±ê×¼²îµÄÊı±¶£©
+               ... %é€Ÿåº¦ä¸€æ­¥é¢„æµ‹ä¸ç¡®å®šåº¦ï¼Œm/s/sï¼ˆå› ä¸ºå­˜åœ¨é›¶åï¼Œå–åŠ é€Ÿåº¦è®¡å™ªå£°æ ‡å‡†å·®çš„æ•°å€ï¼‰
                [1/a,secd(lat)/a,1]*4e-3 *9.8 *(dt0/1), ...
-               ... %Î»ÖÃÒ»²½Ô¤²â²»È·¶¨¶È£¬m/s£¨È¡ËÙ¶È²»È·¶¨¶ÈµÄ»ı·Ö»ò°ë»ı·Ö£©
+               ... %ä½ç½®ä¸€æ­¥é¢„æµ‹ä¸ç¡®å®šåº¦ï¼Œm/sï¼ˆå–é€Ÿåº¦ä¸ç¡®å®šåº¦çš„ç§¯åˆ†æˆ–åŠç§¯åˆ†ï¼‰
                0.01e-9 *3e8 *(dt0/1), ...
-               ... %ÖÓ²î¾àÀëÒ»²½Ô¤²â²»È·¶¨¶È£¬m/s£¨È¡ÖÓÆµ²îËÙ¶ÈÆ¯ÒÆµÄ»ı·Ö»ò°ë»ı·Ö£©
+               ... %é’Ÿå·®è·ç¦»ä¸€æ­¥é¢„æµ‹ä¸ç¡®å®šåº¦ï¼Œm/sï¼ˆå–é’Ÿé¢‘å·®é€Ÿåº¦æ¼‚ç§»çš„ç§¯åˆ†æˆ–åŠç§¯åˆ†ï¼‰
                0.01e-9 *3e8, ...
-               ... %ÖÓÆµ²îËÙ¶ÈÆ¯ÒÆ£¬m/s/s£¨Ğè¸ù¾İËùÓÃ¾§ÕñºÍ¹À¼ÆÇúÏß¾«ĞÄµ÷½Ú£©
+               ... %é’Ÿé¢‘å·®é€Ÿåº¦æ¼‚ç§»ï¼Œm/s/sï¼ˆéœ€æ ¹æ®æ‰€ç”¨æ™¶æŒ¯å’Œä¼°è®¡æ›²çº¿ç²¾å¿ƒè°ƒèŠ‚ï¼‰
                [1,1,1]*0.01 /180*pi, ...
-               ... %ÍÓÂİÒÇÁãÆ«Æ¯ÒÆ£¬rad/s/s£¨Ğè¸ù¾İ¹À¼ÆÇúÏß¾«ĞÄµ÷½Ú£©
+               ... %é™€èºä»ªé›¶åæ¼‚ç§»ï¼Œrad/s/sï¼ˆéœ€æ ¹æ®ä¼°è®¡æ›²çº¿ç²¾å¿ƒè°ƒèŠ‚ï¼‰
                [1,1,1]*0.05e-3 *9.8])^2 * dt0^2;
-                   %¼ÓËÙ¶È¼ÆÁãÆ«Æ¯ÒÆ£¬rad/s/s£¨Ğè¸ù¾İ¹À¼ÆÇúÏß¾«ĞÄµ÷½Ú£¬¸ø´óµã£©
+                   %åŠ é€Ÿåº¦è®¡é›¶åæ¼‚ç§»ï¼Œrad/s/sï¼ˆéœ€æ ¹æ®ä¼°è®¡æ›²çº¿ç²¾å¿ƒè°ƒèŠ‚ï¼Œç»™å¤§ç‚¹ï¼‰
 
-%% Êı¾İ»º´æ
-buffBlkNum = 40;                     %²ÉÑùÊı¾İ»º´æ¿éÊıÁ¿£¨Òª±£Ö¤²¶»ñÊ±´æ´¢Ç¡ºÃ´ÓÍ·¿ªÊ¼£©
-buffBlkSize = 4000;                  %Ò»¸ö¿éµÄ²ÉÑùµãÊı£¨1ms£©
-buffSize = buffBlkSize * buffBlkNum; %²ÉÑùÊı¾İ»º´æ´óĞ¡
-buff_A = zeros(2,buffSize);          %²ÉÑùÊı¾İ»º´æ£¬µÚÒ»ĞĞI£¬µÚ¶şĞĞQ
+%% æ•°æ®ç¼“å­˜
+buffBlkNum = 40;                     %é‡‡æ ·æ•°æ®ç¼“å­˜å—æ•°é‡ï¼ˆè¦ä¿è¯æ•è·æ—¶å­˜å‚¨æ°å¥½ä»å¤´å¼€å§‹ï¼‰
+buffBlkSize = 4000;                  %ä¸€ä¸ªå—çš„é‡‡æ ·ç‚¹æ•°ï¼ˆ1msï¼‰
+buffSize = buffBlkSize * buffBlkNum; %é‡‡æ ·æ•°æ®ç¼“å­˜å¤§å°
+buff_A = zeros(2,buffSize);          %é‡‡æ ·æ•°æ®ç¼“å­˜ï¼Œç¬¬ä¸€è¡ŒIï¼Œç¬¬äºŒè¡ŒQ
 buff_B = zeros(2,buffSize);
-buffBlkPoint = 0;                    %Êı¾İ¸ÃÍùµÚ¼¸¿é´æ£¬´Ó0¿ªÊ¼
-buffHead = 0;                        %×îĞÂÊı¾İµÄĞòºÅ£¬buffBlkSizeµÄ±¶Êı
+buffBlkPoint = 0;                    %æ•°æ®è¯¥å¾€ç¬¬å‡ å—å­˜ï¼Œä»0å¼€å§‹
+buffHead = 0;                        %æœ€æ–°æ•°æ®çš„åºå·ï¼ŒbuffBlkSizeçš„å€æ•°
 
-%% »ñÈ¡ÎÄ¼şÊ±¼ä
-tf = sscanf(file_path((end-22):(end-8)), '%4d%02d%02d_%02d%02d%02d')'; %Êı¾İÎÄ¼ş¿ªÊ¼²ÉÑùÊ±¼ä£¨ÈÕÆÚÊ±¼äÊı×é£©
-[tw, ts] = gps_time(tf); %tw£ºGPSÖÜÊı£¬ts£ºGPSÖÜÄÚÃëÊı
-ta = [ts,0,0] + sample2dt(sample_offset, sampleFreq); %³õÊ¼»¯½ÓÊÕ»úÊ±¼ä£¬[s,ms,us]
-ta = time_carry(round(ta,2)); %È¡Õû
+%% è·å–æ–‡ä»¶æ—¶é—´
+tf = sscanf(file_path((end-22):(end-8)), '%4d%02d%02d_%02d%02d%02d')'; %æ•°æ®æ–‡ä»¶å¼€å§‹é‡‡æ ·æ—¶é—´ï¼ˆæ—¥æœŸæ—¶é—´æ•°ç»„ï¼‰
+[tw, ts] = gps_time(tf); %twï¼šGPSå‘¨æ•°ï¼Œtsï¼šGPSå‘¨å†…ç§’æ•°
+ta = [ts,0,0] + sample2dt(sample_offset, sampleFreq); %åˆå§‹åŒ–æ¥æ”¶æœºæ—¶é—´ï¼Œ[s,ms,us]
+ta = time_carry(round(ta,2)); %å–æ•´
 
-%% ¸ù¾İÀúÊé»ñÈ¡µ±Ç°¿ÉÄÜ¼ûµ½µÄÎÀĞÇ
-svList = gps_constellation(tf, p0); %ÁĞÏòÁ¿£¬ÎªÁË¿´·½±ã
-svN = length(svList); %Í¨µÀÊıÁ¿
+%% æ ¹æ®å†ä¹¦è·å–å½“å‰å¯èƒ½è§åˆ°çš„å«æ˜Ÿ
+svList = gps_constellation(tf, p0); %åˆ—å‘é‡ï¼Œä¸ºäº†çœ‹æ–¹ä¾¿
+svN = length(svList); %é€šé“æ•°é‡
 
-%% ÎªÃ¿¿Å¿ÉÄÜ¼ûµ½µÄÎÀĞÇ·ÖÅä¸ú×ÙÍ¨µÀ
+%% ä¸ºæ¯é¢—å¯èƒ½è§åˆ°çš„å«æ˜Ÿåˆ†é…è·Ÿè¸ªé€šé“
 channels_A = repmat(GPS_L1_CA_channel_struct(), svN,1);
 channels_B = repmat(GPS_L1_CA_channel_struct(), svN,1);
 for k=1:svN
     channels_A(k).PRN = svList(k);
-    channels_A(k).state = 0; %×´Ì¬Î´¼¤»î
+    channels_A(k).state = 0; %çŠ¶æ€æœªæ¿€æ´»
     channels_B(k).PRN = svList(k);
-    channels_B(k).state = 0; %×´Ì¬Î´¼¤»î
+    channels_B(k).state = 0; %çŠ¶æ€æœªæ¿€æ´»
 end
 
-%% Ô¤ÖÃĞÇÀú
+%% é¢„ç½®æ˜Ÿå†
 ephemeris_file = ['.\temp\ephemeris\',file_path((end-22):(end-8)),'.mat'];
 if exist(ephemeris_file, 'file')
-    load(ephemeris_file); %ĞÇÀú´æÔÚ£¬¼ÓÔØĞÇÀúÎÄ¼ş£¬ĞÇÀú±äÁ¿ÃûÎªephemeris£¬ĞÇÀúÎªÁĞ£»µçÀë²ã²ÎÊı±äÁ¿ÃûÎªion
+    load(ephemeris_file); %æ˜Ÿå†å­˜åœ¨ï¼ŒåŠ è½½æ˜Ÿå†æ–‡ä»¶ï¼Œæ˜Ÿå†å˜é‡åä¸ºephemerisï¼Œæ˜Ÿå†ä¸ºåˆ—ï¼›ç”µç¦»å±‚å‚æ•°å˜é‡åä¸ºion
 else
-    ephemeris = NaN(26,32); %ĞÇÀú²»´æÔÚ£¬ÉèÖÃ¿ÕµÄĞÇÀú
-    ion = NaN(1,8); %¿ÕµÄµçÀë²ã²ÎÊı
+    ephemeris = NaN(26,32); %æ˜Ÿå†ä¸å­˜åœ¨ï¼Œè®¾ç½®ç©ºçš„æ˜Ÿå†
+    ion = NaN(1,8); %ç©ºçš„ç”µç¦»å±‚å‚æ•°
 end
 for k=1:svN
     PRN = svList(k);
-    channels_A(k).ephemeris = ephemeris(:,PRN); %ÎªÍ¨µÀµÄĞÇÀú¸³Öµ
+    channels_A(k).ephemeris = ephemeris(:,PRN); %ä¸ºé€šé“çš„æ˜Ÿå†èµ‹å€¼
     channels_B(k).ephemeris = ephemeris(:,PRN);
-    if ~isnan(ephemeris(1,PRN)) %Èç¹û´æÔÚÄ³¿ÅÎÀĞÇµÄĞÇÀú£¬´òÓ¡ÈÕÖ¾
+    if ~isnan(ephemeris(1,PRN)) %å¦‚æœå­˜åœ¨æŸé¢—å«æ˜Ÿçš„æ˜Ÿå†ï¼Œæ‰“å°æ—¥å¿—
         fprintf(logID_A, '%2d: Load ephemeris.\r\n', PRN);
         fprintf(logID_B, '%2d: Load ephemeris.\r\n', PRN);
     end
 end
 
-%% ´´½¨¸ú×Ù½á¹û´æ´¢¿Õ¼ä
-% ·ÖÅäÁËmsToProcessĞĞ£¬Ã¿¸ú×ÙÒ»´ÎÊä³öÒ»´Î½á¹û£¬×îºóÉ¾³ı¶àÓàµÄĞĞ
+%% åˆ›å»ºè·Ÿè¸ªç»“æœå­˜å‚¨ç©ºé—´
+% åˆ†é…äº†msToProcessè¡Œï¼Œæ¯è·Ÿè¸ªä¸€æ¬¡è¾“å‡ºä¸€æ¬¡ç»“æœï¼Œæœ€ååˆ é™¤å¤šä½™çš„è¡Œ
 trackResults_A = repmat(trackResult_struct(msToProcess), svN,1);
 trackResults_B = repmat(trackResult_struct(msToProcess), svN,1);
 for k=1:svN
@@ -130,119 +130,119 @@ for k=1:svN
     trackResults_B(k).PRN = svList(k);
 end
 
-%% ½ÓÊÕ»ú×´Ì¬
-lamda = 299792458 / 1575.42e6; %²¨³¤
-code_length = 299792458 / 1.023e6; %Âë³¤
-receiverState = 0; %½ÓÊÕ»ú×´Ì¬£¬0±íÊ¾Î´³õÊ¼»¯£¬Ê±¼ä»¹²»¶Ô£¬1±íÊ¾Ê±¼äÒÑ¾­Ğ£Õı£¬2±íÊ¾µ¼º½ÂË²¨Æ÷Æô¶¯
-deltaFreq = 0; %Ê±ÖÓ²î£¬Àí½âÎª°Ù·Ö±È£¬Èç¹û²î1e-9£¬Éú³É1500e6HzµÄ²¨»á²î1.5Hz
-deltaPath = 0; %Á½ÌìÏßÂ·¾¶²î
-dtpos = 10; %¶¨Î»Ê±¼ä¼ä¸ô£¬ms
-imu_index = find(imu_data(:,1)>(ta(1)+ta(2)/1e3+ta(3)/1e6), 1); %´óÓÚµ±Ç°½ÓÊÕ»úÊ±¼äµÄimuÊ±¼äË÷Òı
-tp = sec2smu(imu_data(imu_index,1)); %È¡ÆäÊ±¼ä£¬×÷ÎªÏÂÒ»¶¨Î»Ê±¼äµã
-chSign = zeros(svN,1); %Ë«ÌìÏßÍ¨µÀ·ûºÅ£¬Í¬ÏàÎª0£¬·´ÏòÎª0.5
-track_index0 = ones(svN,1); %´æ´¢ÉÏÒ»¶¨Î»Ê±¿Ì¸ú×ÙË÷Òı£¬ÓÃÀ´¼ÆËãÂë¼øÏàÆ÷¾ùÖµ
-dphase_mask = NaN(svN,1); %ÓÃÀ´Ê¶±ğÄÄĞ©Í¨µÀÒÑ¾­Íê³ÉÁËÕûÖÜÄ£ºı¶ÈÈ·¶¨£¬NaNÎªÎ´È·¶¨£¬0ÎªÒÑÈ·¶¨
-lla = NaN(1,3); %½ÓÊÕ»úÎ»ÖÃ
-ele = NaN(svN,1); %ÎÀĞÇ¸ß¶È½Ç£¬deg
-azi = NaN(svN,1); %ÎÀĞÇ·½Î»½Ç£¬deg
-rhodot0 = NaN(svN,1); %ÎÀĞÇÉÏÒ»¶¨Î»Ê±¿ÌÎ±¾àÂÊ£¬ÓÃÀ´ÇóÎ±¾àÂÊµÄ¼ÓËÙ¶È
+%% æ¥æ”¶æœºçŠ¶æ€
+lamda = 299792458 / 1575.42e6; %æ³¢é•¿
+code_length = 299792458 / 1.023e6; %ç é•¿
+receiverState = 0; %æ¥æ”¶æœºçŠ¶æ€ï¼Œ0è¡¨ç¤ºæœªåˆå§‹åŒ–ï¼Œæ—¶é—´è¿˜ä¸å¯¹ï¼Œ1è¡¨ç¤ºæ—¶é—´å·²ç»æ ¡æ­£ï¼Œ2è¡¨ç¤ºå¯¼èˆªæ»¤æ³¢å™¨å¯åŠ¨
+deltaFreq = 0; %æ—¶é’Ÿå·®ï¼Œç†è§£ä¸ºç™¾åˆ†æ¯”ï¼Œå¦‚æœå·®1e-9ï¼Œç”Ÿæˆ1500e6Hzçš„æ³¢ä¼šå·®1.5Hz
+deltaPath = 0; %ä¸¤å¤©çº¿è·¯å¾„å·®
+dtpos = 10; %å®šä½æ—¶é—´é—´éš”ï¼Œms
+imu_index = find(imu_data(:,1)>(ta(1)+ta(2)/1e3+ta(3)/1e6), 1); %å¤§äºå½“å‰æ¥æ”¶æœºæ—¶é—´çš„imuæ—¶é—´ç´¢å¼•
+tp = sec2smu(imu_data(imu_index,1)); %å–å…¶æ—¶é—´ï¼Œä½œä¸ºä¸‹ä¸€å®šä½æ—¶é—´ç‚¹
+chSign = zeros(svN,1); %åŒå¤©çº¿é€šé“ç¬¦å·ï¼ŒåŒç›¸ä¸º0ï¼Œåå‘ä¸º0.5
+track_index0 = ones(svN,1); %å­˜å‚¨ä¸Šä¸€å®šä½æ—¶åˆ»è·Ÿè¸ªç´¢å¼•ï¼Œç”¨æ¥è®¡ç®—ç é‰´ç›¸å™¨å‡å€¼
+dphase_mask = NaN(svN,1); %ç”¨æ¥è¯†åˆ«å“ªäº›é€šé“å·²ç»å®Œæˆäº†æ•´å‘¨æ¨¡ç³Šåº¦ç¡®å®šï¼ŒNaNä¸ºæœªç¡®å®šï¼Œ0ä¸ºå·²ç¡®å®š
+lla = NaN(1,3); %æ¥æ”¶æœºä½ç½®
+ele = NaN(svN,1); %å«æ˜Ÿé«˜åº¦è§’ï¼Œdeg
+azi = NaN(svN,1); %å«æ˜Ÿæ–¹ä½è§’ï¼Œdeg
+rhodot0 = NaN(svN,1); %å«æ˜Ÿä¸Šä¸€å®šä½æ—¶åˆ»ä¼ªè·ç‡ï¼Œç”¨æ¥æ±‚ä¼ªè·ç‡çš„åŠ é€Ÿåº¦
 
-%% ´´½¨½ÓÊÕ»úÊä³ö´æ´¢¿Õ¼ä
-nRow = msToProcess/dtpos + 1000; %¶à·ÖÅäÒ»Ğ©£¬ÒòÎªIMU²ÉÑùÆµÂÊ¿ÉÄÜ±È±ê³ÆµÄ¿ì
-no = 1; %Ö¸Ïòµ±Ç°´æ´¢ĞĞ
-%----½ÓÊÕ»úµÄÊä³ö
-output_ta        = NaN(nRow,2);     %µÚÒ»ÁĞÎªÊ±¼ä£¨s£©£¬µÚ¶şÁĞÎª½ÓÊÕ»ú×´Ì¬
-output_pos       = NaN(nRow,8);     %¶¨Î»£¬[Î»ÖÃ¡¢ËÙ¶È¡¢ÖÓ²î¡¢ÖÓÆµ²î]
-output_sv_A      = NaN(svN,8,nRow); %ÎÀĞÇĞÅÏ¢(ÌìÏßA)£¬[Î»ÖÃ¡¢Î±¾à¡¢ËÙ¶È¡¢Î±¾àÂÊ]
-output_sv_B      = NaN(svN,8,nRow); %ÎÀĞÇĞÅÏ¢(ÌìÏßB)£¬[Î»ÖÃ¡¢Î±¾à¡¢ËÙ¶È¡¢Î±¾àÂÊ]
-output_df        = NaN(nRow,1);     %ĞŞÕıÓÃµÄÖÓÆµ²î
-output_dp        = NaN(nRow,1);     %ĞŞÕıÓÃµÄÂ·¾¶²î
-output_dphase    = NaN(nRow,svN);   %ÏàÎ»²î
-output_Rx        = NaN(nRow,4);     %»ùÏß²âÁ¿
-%----µ¼º½ÂË²¨Æ÷µÄÊä³ö
-output_filter    = NaN(nRow,9);     %ÂË²¨Æ÷µ¼º½½á¹û£¬[Î»ÖÃ¡¢ËÙ¶È¡¢×ËÌ¬]
-output_bias      = NaN(nRow,6);     %IMUÁãÆ«¹À¼Æ
-output_imu       = NaN(nRow,3);     %±£´æÍÓÂİÒÇÊä³ö£¬ÎªÁË»­Í¼£¬¿´ÍÓÂİÒÇÁãÆ«¹À¼ÆµÃ×¼²»×¼
-output_P         = NaN(nRow,size(para.P,1));    %ÂË²¨Æ÷PÕó
-output_svn       = NaN(nRow,3);     %ÂË²¨Æ÷Á¿²âÊıÁ¿£¬[Î±¾àÊıÁ¿¡¢Î±¾àÂÊÊıÁ¿¡¢ÏàÎ»²îÊıÁ¿]
+%% åˆ›å»ºæ¥æ”¶æœºè¾“å‡ºå­˜å‚¨ç©ºé—´
+nRow = msToProcess/dtpos + 1000; %å¤šåˆ†é…ä¸€äº›ï¼Œå› ä¸ºIMUé‡‡æ ·é¢‘ç‡å¯èƒ½æ¯”æ ‡ç§°çš„å¿«
+no = 1; %æŒ‡å‘å½“å‰å­˜å‚¨è¡Œ
+%----æ¥æ”¶æœºçš„è¾“å‡º
+output_ta        = NaN(nRow,2);     %ç¬¬ä¸€åˆ—ä¸ºæ—¶é—´ï¼ˆsï¼‰ï¼Œç¬¬äºŒåˆ—ä¸ºæ¥æ”¶æœºçŠ¶æ€
+output_pos       = NaN(nRow,8);     %å®šä½ï¼Œ[ä½ç½®ã€é€Ÿåº¦ã€é’Ÿå·®ã€é’Ÿé¢‘å·®]
+output_sv_A      = NaN(svN,8,nRow); %å«æ˜Ÿä¿¡æ¯(å¤©çº¿A)ï¼Œ[ä½ç½®ã€ä¼ªè·ã€é€Ÿåº¦ã€ä¼ªè·ç‡]
+output_sv_B      = NaN(svN,8,nRow); %å«æ˜Ÿä¿¡æ¯(å¤©çº¿B)ï¼Œ[ä½ç½®ã€ä¼ªè·ã€é€Ÿåº¦ã€ä¼ªè·ç‡]
+output_df        = NaN(nRow,1);     %ä¿®æ­£ç”¨çš„é’Ÿé¢‘å·®
+output_dp        = NaN(nRow,1);     %ä¿®æ­£ç”¨çš„è·¯å¾„å·®
+output_dphase    = NaN(nRow,svN);   %ç›¸ä½å·®
+output_Rx        = NaN(nRow,4);     %åŸºçº¿æµ‹é‡
+%----å¯¼èˆªæ»¤æ³¢å™¨çš„è¾“å‡º
+output_filter    = NaN(nRow,9);     %æ»¤æ³¢å™¨å¯¼èˆªç»“æœï¼Œ[ä½ç½®ã€é€Ÿåº¦ã€å§¿æ€]
+output_bias      = NaN(nRow,6);     %IMUé›¶åä¼°è®¡
+output_imu       = NaN(nRow,3);     %ä¿å­˜é™€èºä»ªè¾“å‡ºï¼Œä¸ºäº†ç”»å›¾ï¼Œçœ‹é™€èºä»ªé›¶åä¼°è®¡å¾—å‡†ä¸å‡†
+output_P         = NaN(nRow,size(para.P,1));    %æ»¤æ³¢å™¨Pé˜µ
+output_svn       = NaN(nRow,3);     %æ»¤æ³¢å™¨é‡æµ‹æ•°é‡ï¼Œ[ä¼ªè·æ•°é‡ã€ä¼ªè·ç‡æ•°é‡ã€ç›¸ä½å·®æ•°é‡]
 
-%% ´ò¿ªÎÄ¼ş£¬´´½¨½ø¶ÈÌõ
-% ÎÄ¼şA
+%% æ‰“å¼€æ–‡ä»¶ï¼Œåˆ›å»ºè¿›åº¦æ¡
+% æ–‡ä»¶A
 fileID_A = fopen(file_path_A, 'r');
 fseek(fileID_A, round(sample_offset*4), 'bof');
 if int64(ftell(fileID_A))~=int64(sample_offset*4)
     error('Sample offset error!');
 end
-% ÎÄ¼şB
+% æ–‡ä»¶B
 fileID_B = fopen(file_path_B, 'r');
 fseek(fileID_B, round(sample_offset*4), 'bof');
 if int64(ftell(fileID_B))~=int64(sample_offset*4)
     error('Sample offset error!');
 end
-% ½ø¶ÈÌõ
+% è¿›åº¦æ¡
 f = waitbar(0, ['0s/',num2str(msToProcess/1000),'s']);
 
-%% ĞÅºÅ´¦Àí
-for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
-    %----------¸üĞÂ½ø¶ÈÌõ--------------------------------------------------%
-    if mod(t,1000)==0 %1s²½½ø
+%% ä¿¡å·å¤„ç†
+for t=1:msToProcess %åä¹‰ä¸Šçš„æ—¶é—´ï¼Œä»¥é‡‡æ ·ç‚¹æ•°è®¡ç®—
+    %----------æ›´æ–°è¿›åº¦æ¡--------------------------------------------------%
+    if mod(t,1000)==0 %1sæ­¥è¿›
         waitbar(t/msToProcess, f, [num2str(t/1000),'s/',num2str(msToProcess/1000),'s']);
     end
     
-    %----------¶ÁÊı¾İ------------------------------------------------------%
-    buff_A(:,buffBlkPoint*buffBlkSize+(1:buffBlkSize)) = double(fread(fileID_A, [2,buffBlkSize], 'int16')); %ÌìÏßA
-    buff_B(:,buffBlkPoint*buffBlkSize+(1:buffBlkSize)) = double(fread(fileID_B, [2,buffBlkSize], 'int16')); %ÌìÏßB
+    %----------è¯»æ•°æ®------------------------------------------------------%
+    buff_A(:,buffBlkPoint*buffBlkSize+(1:buffBlkSize)) = double(fread(fileID_A, [2,buffBlkSize], 'int16')); %å¤©çº¿A
+    buff_B(:,buffBlkPoint*buffBlkSize+(1:buffBlkSize)) = double(fread(fileID_B, [2,buffBlkSize], 'int16')); %å¤©çº¿B
     buffBlkPoint = buffBlkPoint + 1;
     buffHead = buffBlkPoint * buffBlkSize;
     if buffBlkPoint==buffBlkNum
-        buffBlkPoint = 0; %»º´æ´ÓÍ·¿ªÊ¼
+        buffBlkPoint = 0; %ç¼“å­˜ä»å¤´å¼€å§‹
     end
     
-    %----------¸üĞÂ½ÓÊÕ»úÊ±¼ä----------------------------------------------%
-    % µ±Ç°×îºóÒ»¸ö²ÉÑùµÄ½ÓÊÕ»úÊ±¼ä
-    sampleFreq_real = sampleFreq * (1+deltaFreq); %ÕæÊµµÄ²ÉÑùÆµÂÊ
+    %----------æ›´æ–°æ¥æ”¶æœºæ—¶é—´----------------------------------------------%
+    % å½“å‰æœ€åä¸€ä¸ªé‡‡æ ·çš„æ¥æ”¶æœºæ—¶é—´
+    sampleFreq_real = sampleFreq * (1+deltaFreq); %çœŸå®çš„é‡‡æ ·é¢‘ç‡
     ta = time_carry(ta + sample2dt(buffBlkSize, sampleFreq_real));
     
-    %----------²¶»ñ--------------------------------------------------------%
-    % Ã¿1sµÄ²ÉÑùµãËÑË÷Ò»´Î
+    %----------æ•è·--------------------------------------------------------%
+    % æ¯1sçš„é‡‡æ ·ç‚¹æœç´¢ä¸€æ¬¡
     if mod(t,1000)==0
-        for k=1:svN %ËÑË÷ËùÓĞ¿ÉÄÜ¼ûµ½µÄÎÀĞÇ
-            %====ÌìÏßA
-            if channels_A(k).state==0 %Èç¹ûÍ¨µÀÎ´¼¤»î£¬²¶»ñ³¢ÊÔ¼¤»î
-                [acqResult, peakRatio] = GPS_L1_CA_acq_one(svList(k), buff_A(:,(end-2*8000+1):end)); %2msÊı¾İ²¶»ñ
-                if ~isempty(acqResult) %³É¹¦²¶»ñ
-                    channels_A(k) = GPS_L1_CA_channel_init(channels_A(k), acqResult, t*buffBlkSize, sampleFreq); %¼¤»îÍ¨µÀ
-                    fprintf(logID_A, '%2d: Acquired at %ds, peakRatio=%.2f\r\n', svList(k), t/1000, peakRatio); %´òÓ¡²¶»ñÈÕÖ¾
+        for k=1:svN %æœç´¢æ‰€æœ‰å¯èƒ½è§åˆ°çš„å«æ˜Ÿ
+            %====å¤©çº¿A
+            if channels_A(k).state==0 %å¦‚æœé€šé“æœªæ¿€æ´»ï¼Œæ•è·å°è¯•æ¿€æ´»
+                [acqResult, peakRatio] = GPS_L1_CA_acq_one(svList(k), buff_A(:,(end-2*8000+1):end)); %2msæ•°æ®æ•è·
+                if ~isempty(acqResult) %æˆåŠŸæ•è·
+                    channels_A(k) = GPS_L1_CA_channel_init(channels_A(k), acqResult, t*buffBlkSize, sampleFreq); %æ¿€æ´»é€šé“
+                    fprintf(logID_A, '%2d: Acquired at %ds, peakRatio=%.2f\r\n', svList(k), t/1000, peakRatio); %æ‰“å°æ•è·æ—¥å¿—
                 end
             end
-            %====ÌìÏßB
-            if channels_B(k).state==0 %Èç¹ûÍ¨µÀÎ´¼¤»î£¬²¶»ñ³¢ÊÔ¼¤»î
-                [acqResult, peakRatio] = GPS_L1_CA_acq_one(svList(k), buff_B(:,(end-2*8000+1):end)); %2msÊı¾İ²¶»ñ
-                if ~isempty(acqResult) %³É¹¦²¶»ñ
-                    channels_B(k) = GPS_L1_CA_channel_init(channels_B(k), acqResult, t*buffBlkSize, sampleFreq); %¼¤»îÍ¨µÀ
-                    fprintf(logID_B, '%2d: Acquired at %ds, peakRatio=%.2f\r\n', svList(k), t/1000, peakRatio); %´òÓ¡²¶»ñÈÕÖ¾
+            %====å¤©çº¿B
+            if channels_B(k).state==0 %å¦‚æœé€šé“æœªæ¿€æ´»ï¼Œæ•è·å°è¯•æ¿€æ´»
+                [acqResult, peakRatio] = GPS_L1_CA_acq_one(svList(k), buff_B(:,(end-2*8000+1):end)); %2msæ•°æ®æ•è·
+                if ~isempty(acqResult) %æˆåŠŸæ•è·
+                    channels_B(k) = GPS_L1_CA_channel_init(channels_B(k), acqResult, t*buffBlkSize, sampleFreq); %æ¿€æ´»é€šé“
+                    fprintf(logID_B, '%2d: Acquired at %ds, peakRatio=%.2f\r\n', svList(k), t/1000, peakRatio); %æ‰“å°æ•è·æ—¥å¿—
                 end
             end
         end %end for k=1:svN
     end %end if mod(t,1000)==0
     
-    %----------¸ú×Ù--------------------------------------------------------%
+    %----------è·Ÿè¸ª--------------------------------------------------------%
     for k=1:svN
-        % ¼ÇÂ¼Á½ÌìÏßµÄ±ÈÌØ¿ªÊ¼±êÖ¾£¨¸ú×Ùµ½±ÈÌØ¿ªÊ¼µÄ×îÇ°ÃæÒ»¶Î£©
-        % Î´¼¤»î/²»ÊÇ±ÈÌØ¿ªÊ¼Ê±£¬±êÖ¾Îª0£¬¼ì²âµ½±ÈÌØ¿ªÊ¼£¬±êÖ¾·Ç0
-        % ÒòÎªÁ½ÌìÏßÀëµÃ½Ï½ü£¬»áÍ¬Ê±¸ú×Ùµ½Ò»¸öÂë
-        % µ±Á½ÌìÏßµÄ±ÈÌØ±êÖ¾¶¼²»Îª0Ê±£¬¸ù¾İµ±Ç°IÂ·Êı¾İµÄ·ûºÅÅĞ¶ÏÁ½ÌìÏßÊÇ·ñ´æÔÚ180¶ÈÏàÎ»·­×ª
-        % µ±ĞÅºÅÊ§ËøÊ±£¬±ÈÌØÊÇ´íµÄ£¬´ËÊ±ÅĞ¶Ï½á¹ûÎŞÒâÒå£¬²»Ó°Ïì£¬ÒòÎªÈõĞÅºÅ²»»á½øĞĞÏàÎ»²î¼ÆËã
+        % è®°å½•ä¸¤å¤©çº¿çš„æ¯”ç‰¹å¼€å§‹æ ‡å¿—ï¼ˆè·Ÿè¸ªåˆ°æ¯”ç‰¹å¼€å§‹çš„æœ€å‰é¢ä¸€æ®µï¼‰
+        % æœªæ¿€æ´»/ä¸æ˜¯æ¯”ç‰¹å¼€å§‹æ—¶ï¼Œæ ‡å¿—ä¸º0ï¼Œæ£€æµ‹åˆ°æ¯”ç‰¹å¼€å§‹ï¼Œæ ‡å¿—é0
+        % å› ä¸ºä¸¤å¤©çº¿ç¦»å¾—è¾ƒè¿‘ï¼Œä¼šåŒæ—¶è·Ÿè¸ªåˆ°ä¸€ä¸ªç 
+        % å½“ä¸¤å¤©çº¿çš„æ¯”ç‰¹æ ‡å¿—éƒ½ä¸ä¸º0æ—¶ï¼Œæ ¹æ®å½“å‰Iè·¯æ•°æ®çš„ç¬¦å·åˆ¤æ–­ä¸¤å¤©çº¿æ˜¯å¦å­˜åœ¨180åº¦ç›¸ä½ç¿»è½¬
+        % å½“ä¿¡å·å¤±é”æ—¶ï¼Œæ¯”ç‰¹æ˜¯é”™çš„ï¼Œæ­¤æ—¶åˆ¤æ–­ç»“æœæ— æ„ä¹‰ï¼Œä¸å½±å“ï¼Œå› ä¸ºå¼±ä¿¡å·ä¸ä¼šè¿›è¡Œç›¸ä½å·®è®¡ç®—
         bitStartFlag_A = 0;
         bitStartFlag_B = 0;
-        %====ÌìÏßA
-        if channels_A(k).state~=0 %Èç¹ûÍ¨µÀ¼¤»î£¬½øĞĞ¸ú×Ù
+        %====å¤©çº¿A
+        if channels_A(k).state~=0 %å¦‚æœé€šé“æ¿€æ´»ï¼Œè¿›è¡Œè·Ÿè¸ª
             while 1
-                % ÅĞ¶ÏÊÇ·ñÓĞÍêÕûµÄ¸ú×ÙÊı¾İ
+                % åˆ¤æ–­æ˜¯å¦æœ‰å®Œæ•´çš„è·Ÿè¸ªæ•°æ®
                 if mod(buffHead-channels_A(k).trackDataHead,buffSize)>(buffSize/2)
                     break
                 end
-                % ´æ¸ú×Ù½á¹û£¨Í¨µÀ²ÎÊı£©
+                % å­˜è·Ÿè¸ªç»“æœï¼ˆé€šé“å‚æ•°ï¼‰
                 n = trackResults_A(k).n;
                 trackResults_A(k).dataIndex(n,:)    = channels_A(k).dataIndex;
                 trackResults_A(k).ts0(n,:)          = channels_A(k).ts0;
@@ -250,7 +250,7 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                 trackResults_A(k).codeFreq(n,:)     = channels_A(k).codeFreq;
                 trackResults_A(k).remCarrPhase(n,:) = channels_A(k).remCarrPhase;
                 trackResults_A(k).carrFreq(n,:)     = channels_A(k).carrFreq;
-                % »ù´ø´¦Àí
+                % åŸºå¸¦å¤„ç†
                 trackDataHead = channels_A(k).trackDataHead;
                 trackDataTail = channels_A(k).trackDataTail;
                 if trackDataHead>trackDataTail
@@ -260,10 +260,10 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                     [channels_A(k), I_Q, disc, bitStartFlag] = ...
                         GPS_L1_CA_track_deep(channels_A(k), sampleFreq_real, buffSize, [buff_A(:,trackDataTail:end),buff_A(:,1:trackDataHead)], logID_A);
                 end
-                % ¼ÇÂ¼±ÈÌØ¿ªÊ¼±êÖ¾
+                % è®°å½•æ¯”ç‰¹å¼€å§‹æ ‡å¿—
                 bitStartFlag_A = bitStartFlag;
                 I_P_A = I_Q(1);
-                % ´æ¸ú×Ù½á¹û£¨¸ú×Ù½á¹û£©
+                % å­˜è·Ÿè¸ªç»“æœï¼ˆè·Ÿè¸ªç»“æœï¼‰
                 trackResults_A(k).I_Q(n,:)          = I_Q;
                 trackResults_A(k).disc(n,:)         = disc;
                 trackResults_A(k).bitStartFlag(n,:) = bitStartFlag;
@@ -274,14 +274,14 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                 trackResults_A(k).n                 = n + 1;
             end
         end
-        %====ÌìÏßB
-        if channels_B(k).state~=0 %Èç¹ûÍ¨µÀ¼¤»î£¬½øĞĞ¸ú×Ù
+        %====å¤©çº¿B
+        if channels_B(k).state~=0 %å¦‚æœé€šé“æ¿€æ´»ï¼Œè¿›è¡Œè·Ÿè¸ª
             while 1
-                % ÅĞ¶ÏÊÇ·ñÓĞÍêÕûµÄ¸ú×ÙÊı¾İ
+                % åˆ¤æ–­æ˜¯å¦æœ‰å®Œæ•´çš„è·Ÿè¸ªæ•°æ®
                 if mod(buffHead-channels_B(k).trackDataHead,buffSize)>(buffSize/2)
                     break
                 end
-                % ´æ¸ú×Ù½á¹û£¨Í¨µÀ²ÎÊı£©
+                % å­˜è·Ÿè¸ªç»“æœï¼ˆé€šé“å‚æ•°ï¼‰
                 n = trackResults_B(k).n;
                 trackResults_B(k).dataIndex(n,:)    = channels_B(k).dataIndex;
                 trackResults_B(k).ts0(n,:)          = channels_B(k).ts0;
@@ -289,7 +289,7 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                 trackResults_B(k).codeFreq(n,:)     = channels_B(k).codeFreq;
                 trackResults_B(k).remCarrPhase(n,:) = channels_B(k).remCarrPhase;
                 trackResults_B(k).carrFreq(n,:)     = channels_B(k).carrFreq;
-                % »ù´ø´¦Àí
+                % åŸºå¸¦å¤„ç†
                 trackDataHead = channels_B(k).trackDataHead;
                 trackDataTail = channels_B(k).trackDataTail;
                 if trackDataHead>trackDataTail
@@ -299,10 +299,10 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                     [channels_B(k), I_Q, disc, bitStartFlag] = ...
                         GPS_L1_CA_track_deep(channels_B(k), sampleFreq_real, buffSize, [buff_B(:,trackDataTail:end),buff_B(:,1:trackDataHead)], logID_B);
                 end
-                % ¼ÇÂ¼±ÈÌØ¿ªÊ¼±êÖ¾
+                % è®°å½•æ¯”ç‰¹å¼€å§‹æ ‡å¿—
                 bitStartFlag_B = bitStartFlag;
                 I_P_B = I_Q(1);
-                % ´æ¸ú×Ù½á¹û£¨¸ú×Ù½á¹û£©
+                % å­˜è·Ÿè¸ªç»“æœï¼ˆè·Ÿè¸ªç»“æœï¼‰
                 trackResults_B(k).I_Q(n,:)          = I_Q;
                 trackResults_B(k).disc(n,:)         = disc;
                 trackResults_B(k).bitStartFlag(n,:) = bitStartFlag;
@@ -313,9 +313,9 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                 trackResults_B(k).n                 = n + 1;
             end
         end
-        %----ÅĞ¶ÏÍ¨µÀ·ûºÅ
-        % ´¦ÓÚÁ¬Ğø¸ú×ÙµÄÍ¨µÀ²»¸Ä±äÍ¨µÀ·ûºÅ£¬ÒòÎªÍ¨µÀ·ûºÅ¿ÉÄÜÓĞÎóÅĞ
-        % ½øÈëÇ¿ĞÅºÅ×´Ì¬Ö®Ç°µÄ·ûºÅÅĞ¶ÏÒ»¶¨ÊÇÕıÈ·µÄ
+        %----åˆ¤æ–­é€šé“ç¬¦å·
+        % å¤„äºè¿ç»­è·Ÿè¸ªçš„é€šé“ä¸æ”¹å˜é€šé“ç¬¦å·ï¼Œå› ä¸ºé€šé“ç¬¦å·å¯èƒ½æœ‰è¯¯åˆ¤
+        % è¿›å…¥å¼ºä¿¡å·çŠ¶æ€ä¹‹å‰çš„ç¬¦å·åˆ¤æ–­ä¸€å®šæ˜¯æ­£ç¡®çš„
         if isnan(dphase_mask(k))
             if bitStartFlag_A~=0 && bitStartFlag_B~=0
                 if I_P_A*I_P_B>=0
@@ -327,109 +327,109 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
         end
     end %end for k=1:svN
     
-    %----------¶¨Î»-------------------------------------------------------%
-    dtp = (ta(1)-tp(1)) + (ta(2)-tp(2))/1e3 + (ta(3)-tp(3))/1e6; %µ±Ç°²ÉÑùÊ±¼äÓë¶¨Î»Ê±¼äÖ®²î£¬>=0Ê±±íÊ¾µ±Ç°²ÉÑùÊ±¼äÒÑ¾­µ½´ï»ò³¬¹ı¶¨Î»Ê±¼ä
+    %----------å®šä½-------------------------------------------------------%
+    dtp = (ta(1)-tp(1)) + (ta(2)-tp(2))/1e3 + (ta(3)-tp(3))/1e6; %å½“å‰é‡‡æ ·æ—¶é—´ä¸å®šä½æ—¶é—´ä¹‹å·®ï¼Œ>=0æ—¶è¡¨ç¤ºå½“å‰é‡‡æ ·æ—¶é—´å·²ç»åˆ°è¾¾æˆ–è¶…è¿‡å®šä½æ—¶é—´
     if dtp>=0
         
-        % 1.¼ÆËãÎÀĞÇÎ»ÖÃ¡¢ËÙ¶È£¬²âÁ¿Î±¾à¡¢Î±¾àÂÊ¡¢ÏàÎ»²î£¬¼ÆËãÂË²¨Æ÷ÓÃµÄÊı¾İ
-        sv_A = NaN(svN,8); %ÎÀĞÇĞÅÏ¢£¬[Î»ÖÃ¡¢Î±¾à¡¢ËÙ¶È¡¢Î±¾àÂÊ]
+        % 1.è®¡ç®—å«æ˜Ÿä½ç½®ã€é€Ÿåº¦ï¼Œæµ‹é‡ä¼ªè·ã€ä¼ªè·ç‡ã€ç›¸ä½å·®ï¼Œè®¡ç®—æ»¤æ³¢å™¨ç”¨çš„æ•°æ®
+        sv_A = NaN(svN,8); %å«æ˜Ÿä¿¡æ¯ï¼Œ[ä½ç½®ã€ä¼ªè·ã€é€Ÿåº¦ã€ä¼ªè·ç‡]
         sv_B = NaN(svN,8);
-        dphase = NaN(svN,1); %ÏàÎ»²î£¬circ
-        rho_m         = NaN(svN,1); %½øÈëÂË²¨Æ÷µÄÎ±¾àÁ¿²â£¬m
-        rhodot_m      = NaN(svN,1); %½øÈëÂË²¨Æ÷µÄÎ±¾àÂÊÁ¿²â£¬m/s
-        sigma_rho_A   = NaN(svN,1); %Î±¾àÁ¿²â±ê×¼²î
-        sigma_phase_A = NaN(svN,1); %AÌìÏßÔØ²¨ÏàÎ»±ê×¼²î
-        sigma_phase_B = NaN(svN,1); %BÌìÏßÔØ²¨ÏàÎ»±ê×¼²î
+        dphase = NaN(svN,1); %ç›¸ä½å·®ï¼Œcirc
+        rho_m         = NaN(svN,1); %è¿›å…¥æ»¤æ³¢å™¨çš„ä¼ªè·é‡æµ‹ï¼Œm
+        rhodot_m      = NaN(svN,1); %è¿›å…¥æ»¤æ³¢å™¨çš„ä¼ªè·ç‡é‡æµ‹ï¼Œm/s
+        sigma_rho_A   = NaN(svN,1); %ä¼ªè·é‡æµ‹æ ‡å‡†å·®
+        sigma_phase_A = NaN(svN,1); %Aå¤©çº¿è½½æ³¢ç›¸ä½æ ‡å‡†å·®
+        sigma_phase_B = NaN(svN,1); %Bå¤©çº¿è½½æ³¢ç›¸ä½æ ‡å‡†å·®
         for k=1:svN
-            %====ÌìÏßA
+            %====å¤©çº¿A
             if channels_A(k).state==2
-                dn = mod(buffHead-channels_A(k).trackDataTail+1, buffSize) - 1; %trackDataTailÇ¡ºÃ³¬Ç°buffHeadÒ»¸öÊ±£¬dn=-1
-                dtc = dn / sampleFreq_real; %µ±Ç°²ÉÑùÊ±¼äÓë¸ú×ÙµãµÄÊ±¼ä²î
-                dt = dtc - dtp; %¶¨Î»µãµ½¸ú×ÙµãµÄÊ±¼ä²î
-                carrFreq = channels_A(k).carrFreq + 1575.42e6*deltaFreq; %ĞŞÕıºóµÄÔØ²¨ÆµÂÊ
-                codeFreq = (carrFreq/1575.42e6+1)*1.023e6; %Í¨¹ıÔØ²¨ÆµÂÊ¼ÆËãµÄÂëÆµÂÊ
-                codePhase = channels_A(k).remCodePhase + dt*codeFreq; %¶¨Î»µãÂëÏàÎ»
-                ts0 = [floor(channels_A(k).ts0/1e3), mod(channels_A(k).ts0,1e3), 0] + [0, floor(codePhase/1023), mod(codePhase/1023,1)*1e3]; %¶¨Î»µãµÄÂë·¢ÉäÊ±¼ä
-                [sv_A(k,:),~] = sv_ecef(channels_A(k).ephemeris, tp, ts0); %¸ù¾İĞÇÀú¼ÆËãÎÀĞÇ[Î»ÖÃ¡¢Î±¾à¡¢ËÙ¶È]
-                sv_A(k,8) = -carrFreq*lamda; %ÔØ²¨ÆµÂÊ×ª»¯ÎªËÙ¶È
-                sv_A(k,8) = sv_A(k,8) + channels_A(k).ephemeris(9)*299792458; %ĞŞÎÀĞÇÖÓÆµ²î£¬ÎÀĞÇÖÓ¿ì²âµÄÎ±¾àÂÊÆ«Ğ¡
+                dn = mod(buffHead-channels_A(k).trackDataTail+1, buffSize) - 1; %trackDataTailæ°å¥½è¶…å‰buffHeadä¸€ä¸ªæ—¶ï¼Œdn=-1
+                dtc = dn / sampleFreq_real; %å½“å‰é‡‡æ ·æ—¶é—´ä¸è·Ÿè¸ªç‚¹çš„æ—¶é—´å·®
+                dt = dtc - dtp; %å®šä½ç‚¹åˆ°è·Ÿè¸ªç‚¹çš„æ—¶é—´å·®
+                carrFreq = channels_A(k).carrFreq + 1575.42e6*deltaFreq; %ä¿®æ­£åçš„è½½æ³¢é¢‘ç‡
+                codeFreq = (carrFreq/1575.42e6+1)*1.023e6; %é€šè¿‡è½½æ³¢é¢‘ç‡è®¡ç®—çš„ç é¢‘ç‡
+                codePhase = channels_A(k).remCodePhase + dt*codeFreq; %å®šä½ç‚¹ç ç›¸ä½
+                ts0 = [floor(channels_A(k).ts0/1e3), mod(channels_A(k).ts0,1e3), 0] + [0, floor(codePhase/1023), mod(codePhase/1023,1)*1e3]; %å®šä½ç‚¹çš„ç å‘å°„æ—¶é—´
+                [sv_A(k,:),~] = sv_ecef(channels_A(k).ephemeris, tp, ts0); %æ ¹æ®æ˜Ÿå†è®¡ç®—å«æ˜Ÿ[ä½ç½®ã€ä¼ªè·ã€é€Ÿåº¦]
+                sv_A(k,8) = -carrFreq*lamda; %è½½æ³¢é¢‘ç‡è½¬åŒ–ä¸ºé€Ÿåº¦
+                sv_A(k,8) = sv_A(k,8) + channels_A(k).ephemeris(9)*299792458; %ä¿®å«æ˜Ÿé’Ÿé¢‘å·®ï¼Œå«æ˜Ÿé’Ÿå¿«æµ‹çš„ä¼ªè·ç‡åå°
                 phase_A = channels_A(k).remCarrPhase + channels_A(k).carrNco*dt;
-                % µçÀë²ãÑÓ³ÙĞ£Õı
-                if ~isnan(ion(1)) %´æÔÚµçÀë²ã²ÎÊı
+                % ç”µç¦»å±‚å»¶è¿Ÿæ ¡æ­£
+                if ~isnan(ion(1)) %å­˜åœ¨ç”µç¦»å±‚å‚æ•°
                     if ~isnan(ele(k)) && ~isnan(lla(1))
-                        tiono = Klobuchar_iono(ion, ele(k), azi(k), lla(1), lla(2), tp(1)+tp(2)/1e3+tp(3)/1e6); %¼ÆËãµçÀë²ãÑÓÊ±
-                        sv_A(k,4) = sv_A(k,4) - tiono*299792458; %ĞŞÕıÎ±¾à
+                        tiono = Klobuchar_iono(ion, ele(k), azi(k), lla(1), lla(2), tp(1)+tp(2)/1e3+tp(3)/1e6); %è®¡ç®—ç”µç¦»å±‚å»¶æ—¶
+                        sv_A(k,4) = sv_A(k,4) - tiono*299792458; %ä¿®æ­£ä¼ªè·
                     end
                 end
                 %---------------------------------------------------------%
-                if channels_A(k).strength==2 %Ç¿ĞÅºÅÊ±¸øÎ±¾àÂÊÁ¿²â
+                if channels_A(k).strength==2 %å¼ºä¿¡å·æ—¶ç»™ä¼ªè·ç‡é‡æµ‹
                     rhodot_m(k) = sv_A(k,8);
                     sigma_phase_A(k) = sqrt(channels_A(k).carrStd.D0);
                 end
-                if channels_A(k).CN0>35 %Æ½¾ùÔØÔë±È´óÓÚ35Ê±¸øÎ±¾àÁ¿²â
-                    % ¼ÆËã×î½ü¸üĞÂ¼ä¸ôÄÚÂë¼øÏàÆ÷Êä³öµÄ¾ùÖµ
-                    % ±¾µØÂë³¬Ç°£¬²âµÄÎ±¾àÆ«¶Ì£¬Âë¼øÏàÆ÷Îª¸ºÖµ£¨ÒòÎª¸ºĞ±ÂÊ£©£¬ĞŞÕıÎ±¾àÊÇ¼õÂë¼øÏàÆ÷µÄÖµ
+                if channels_A(k).CN0>35 %å¹³å‡è½½å™ªæ¯”å¤§äº35æ—¶ç»™ä¼ªè·é‡æµ‹
+                    % è®¡ç®—æœ€è¿‘æ›´æ–°é—´éš”å†…ç é‰´ç›¸å™¨è¾“å‡ºçš„å‡å€¼
+                    % æœ¬åœ°ç è¶…å‰ï¼Œæµ‹çš„ä¼ªè·åçŸ­ï¼Œç é‰´ç›¸å™¨ä¸ºè´Ÿå€¼ï¼ˆå› ä¸ºè´Ÿæ–œç‡ï¼‰ï¼Œä¿®æ­£ä¼ªè·æ˜¯å‡ç é‰´ç›¸å™¨çš„å€¼
                     rho_m(k) = sv_A(k,4) - mean(trackResults_A(k).disc(track_index0(k):(trackResults_A(k).n-1),1))*code_length;
                     sigma_rho_A(k) = sqrt(channels_A(k).codeStd.D0)/3.2 * code_length;
                 end
                 %---------------------------------------------------------%
             end
-            track_index0(k) = trackResults_A(k).n; %¸üĞÂ¸ú×ÙË÷Òı
-            %====ÌìÏßB
+            track_index0(k) = trackResults_A(k).n; %æ›´æ–°è·Ÿè¸ªç´¢å¼•
+            %====å¤©çº¿B
             if channels_B(k).state==2
-                dn = mod(buffHead-channels_B(k).trackDataTail+1, buffSize) - 1; %trackDataTailÇ¡ºÃ³¬Ç°buffHeadÒ»¸öÊ±£¬dn=-1
-                dtc = dn / sampleFreq_real; %µ±Ç°²ÉÑùÊ±¼äÓë¸ú×ÙµãµÄÊ±¼ä²î
-                dt = dtc - dtp; %¶¨Î»µãµ½¸ú×ÙµãµÄÊ±¼ä²î
-                carrFreq = channels_B(k).carrFreq + 1575.42e6*deltaFreq; %ĞŞÕıºóµÄÔØ²¨ÆµÂÊ
-                codeFreq = (carrFreq/1575.42e6+1)*1.023e6; %Í¨¹ıÔØ²¨ÆµÂÊ¼ÆËãµÄÂëÆµÂÊ
-                codePhase = channels_B(k).remCodePhase + dt*codeFreq; %¶¨Î»µãÂëÏàÎ»
-                ts0 = [floor(channels_B(k).ts0/1e3), mod(channels_B(k).ts0,1e3), 0] + [0, floor(codePhase/1023), mod(codePhase/1023,1)*1e3]; %¶¨Î»µãµÄÂë·¢ÉäÊ±¼ä
-                [sv_B(k,:),~] = sv_ecef(channels_B(k).ephemeris, tp, ts0); %¸ù¾İĞÇÀú¼ÆËãÎÀĞÇ[Î»ÖÃ¡¢Î±¾à¡¢ËÙ¶È]
-                sv_B(k,8) = -carrFreq*lamda; %ÔØ²¨ÆµÂÊ×ª»¯ÎªËÙ¶È
-                sv_B(k,8) = sv_B(k,8) + channels_B(k).ephemeris(9)*299792458; %ĞŞÎÀĞÇÖÓÆµ²î£¬ÎÀĞÇÖÓ¿ì²âµÄÎ±¾àÂÊÆ«Ğ¡
+                dn = mod(buffHead-channels_B(k).trackDataTail+1, buffSize) - 1; %trackDataTailæ°å¥½è¶…å‰buffHeadä¸€ä¸ªæ—¶ï¼Œdn=-1
+                dtc = dn / sampleFreq_real; %å½“å‰é‡‡æ ·æ—¶é—´ä¸è·Ÿè¸ªç‚¹çš„æ—¶é—´å·®
+                dt = dtc - dtp; %å®šä½ç‚¹åˆ°è·Ÿè¸ªç‚¹çš„æ—¶é—´å·®
+                carrFreq = channels_B(k).carrFreq + 1575.42e6*deltaFreq; %ä¿®æ­£åçš„è½½æ³¢é¢‘ç‡
+                codeFreq = (carrFreq/1575.42e6+1)*1.023e6; %é€šè¿‡è½½æ³¢é¢‘ç‡è®¡ç®—çš„ç é¢‘ç‡
+                codePhase = channels_B(k).remCodePhase + dt*codeFreq; %å®šä½ç‚¹ç ç›¸ä½
+                ts0 = [floor(channels_B(k).ts0/1e3), mod(channels_B(k).ts0,1e3), 0] + [0, floor(codePhase/1023), mod(codePhase/1023,1)*1e3]; %å®šä½ç‚¹çš„ç å‘å°„æ—¶é—´
+                [sv_B(k,:),~] = sv_ecef(channels_B(k).ephemeris, tp, ts0); %æ ¹æ®æ˜Ÿå†è®¡ç®—å«æ˜Ÿ[ä½ç½®ã€ä¼ªè·ã€é€Ÿåº¦]
+                sv_B(k,8) = -carrFreq*lamda; %è½½æ³¢é¢‘ç‡è½¬åŒ–ä¸ºé€Ÿåº¦
+                sv_B(k,8) = sv_B(k,8) + channels_B(k).ephemeris(9)*299792458; %ä¿®å«æ˜Ÿé’Ÿé¢‘å·®ï¼Œå«æ˜Ÿé’Ÿå¿«æµ‹çš„ä¼ªè·ç‡åå°
                 phase_B = channels_B(k).remCarrPhase + channels_B(k).carrNco*dt;
                 %---------------------------------------------------------%
-                if channels_A(k).state==2 && channels_A(k).strength==2 && channels_B(k).strength==2 %A¡¢B¶¼ÎªÇ¿ĞÅºÅÊ±¼ÆËãÏàÎ»²î
+                if channels_A(k).state==2 && channels_A(k).strength==2 && channels_B(k).strength==2 %Aã€Béƒ½ä¸ºå¼ºä¿¡å·æ—¶è®¡ç®—ç›¸ä½å·®
                     dphase(k) = mod((channels_A(k).carrCirc+phase_A)-(channels_B(k).carrCirc+phase_B)+chSign(k)+circ_half,circ_limit) - circ_half;
-                    dphase(k) = dphase(k) - deltaPath; %Â·¾¶²îĞŞÕı
+                    dphase(k) = dphase(k) - deltaPath; %è·¯å¾„å·®ä¿®æ­£
                     sigma_phase_B(k) = sqrt(channels_B(k).carrStd.D0);
                 end
                 %---------------------------------------------------------%
             end
         end
-        dphase_m = dphase + dphase_mask; %È·¶¨ÁËÄ£ºı¶ÈµÄÏàÎ»²î
+        dphase_m = dphase + dphase_mask; %ç¡®å®šäº†æ¨¡ç³Šåº¦çš„ç›¸ä½å·®
         
-        % 2.Ö±½Ó¶¨Î»
-%         pos = pos_solve(sv_A(~isnan(sv_A(:,1)),:)); %ÌáÈ¡¿É¼ûÎÀĞÇ¶¨Î»£¬Èç¹û²»¹»4¿ÅÎÀĞÇ·µ»Ø8¸öNaN
-        pos = pos_solve(sv_A(~isnan(rho_m),:)); %ÌáÈ¡ĞÅºÅÓĞÒ»¶¨Ç¿¶ÈµÄÎÀĞÇ½øĞĞ¶¨Î»
-        lla = pos(1:3); %½ÓÊÕ»úÎ»ÖÃ
+        % 2.ç›´æ¥å®šä½
+%         pos = pos_solve(sv_A(~isnan(sv_A(:,1)),:)); %æå–å¯è§å«æ˜Ÿå®šä½ï¼Œå¦‚æœä¸å¤Ÿ4é¢—å«æ˜Ÿè¿”å›8ä¸ªNaN
+        pos = pos_solve(sv_A(~isnan(rho_m),:)); %æå–ä¿¡å·æœ‰ä¸€å®šå¼ºåº¦çš„å«æ˜Ÿè¿›è¡Œå®šä½
+        lla = pos(1:3); %æ¥æ”¶æœºä½ç½®
         
-        % a.È¡Á½¸öÌìÏß½ÓÊÕÎÀĞÇµÄ²¢¼¯
+        % a.å–ä¸¤ä¸ªå¤©çº¿æ¥æ”¶å«æ˜Ÿçš„å¹¶é›†
         rs = NaN(svN,3);
         vs = NaN(svN,3);
         index = find(~isnan(sv_B(:,1)));
         rs(index,:) = sv_B(index,1:3);
         vs(index,:) = sv_B(index,5:7);
-        index = find(~isnan(sv_A(:,1))); %ÒÔAÎªÖ÷
+        index = find(~isnan(sv_A(:,1))); %ä»¥Aä¸ºä¸»
         rs(index,:) = sv_A(index,1:3);
         vs(index,:) = sv_A(index,5:7);
         
-        % 3.¸üĞÂµ¼º½ÂË²¨Æ÷
+        % 3.æ›´æ–°å¯¼èˆªæ»¤æ³¢å™¨
         if receiverState==2
-            %----¸øÁ¿²âÔëÉù
-            sigma_rhodot_A = sigma_phase_A*6 * lamda; %25H´ø¿íÇé¿öÏÂÆµÂÊÔëÉùÊÇÊäÈëÏàÎ»ÔëÉùµÄ6±¶£¨·ÂÕæµÃµ½£©
-            sigma_dphase = sqrt(sigma_phase_A.^2+sigma_phase_B.^2)/4.5; %25Hz´ø¿íÇé¿öÏÂÊµ¼ÊÏàÎ»ÔëÉùÊÇÊäÈëÏàÎ»ÔëÉùµÄ1/4.5±¶£¨·ÂÕæµÃµ½£©
-            sigma_dphase = sigma_dphase + 0.04*(90-ele)/90; %ÏàÎ»ÔëÉù¼ÓÒ»¸öÓë¸ß¶È½ÇÏà¹ØµÄ»ùÖµ
-            %----¸üĞÂµ¼º½ÂË²¨Æ÷
+            %----ç»™é‡æµ‹å™ªå£°
+            sigma_rhodot_A = sigma_phase_A*6 * lamda; %25Hå¸¦å®½æƒ…å†µä¸‹é¢‘ç‡å™ªå£°æ˜¯è¾“å…¥ç›¸ä½å™ªå£°çš„6å€ï¼ˆä»¿çœŸå¾—åˆ°ï¼‰
+            sigma_dphase = sqrt(sigma_phase_A.^2+sigma_phase_B.^2)/4.5; %25Hzå¸¦å®½æƒ…å†µä¸‹å®é™…ç›¸ä½å™ªå£°æ˜¯è¾“å…¥ç›¸ä½å™ªå£°çš„1/4.5å€ï¼ˆä»¿çœŸå¾—åˆ°ï¼‰
+            sigma_dphase = sigma_dphase + 0.04*(90-ele)/90; %ç›¸ä½å™ªå£°åŠ ä¸€ä¸ªä¸é«˜åº¦è§’ç›¸å…³çš„åŸºå€¼
+            %----æ›´æ–°å¯¼èˆªæ»¤æ³¢å™¨
             [NF, rho, rhodot] = NF.update(imu_data(imu_index,2:7), sv_A, [rho_m,rhodot_m,dphase_m], [sigma_rho_A,sigma_rhodot_A,sigma_dphase]);
 %             [NF, rho, rhodot] = NF.update(imu_data(imu_index,2:7)+[0,0,0.6,0,0,0], sv_A, [rho_m,rhodot_m,dphase_m*NaN], [sigma_rho_A,sigma_rhodot_A,sigma_dphase]);
-            delta_rho_A = rho - sv_A(:,4); %Âë»·Î±¾àÎó²î£¬¼ÆËãÖµ¼õ»·Â·Öµ
-            delta_rhodot_A = rhodot - sv_A(:,8); %ÔØ²¨»·Î±¾àÂÊÎó²î
-            lla = NF.pos; %½ÓÊÕ»úÎ»ÖÃ
-            %----¸üĞÂAÌìÏßÍ¨µÀÔØ²¨¼ÆÊı£¬ĞŞÕıÕûÖÜÎó²î
+            delta_rho_A = rho - sv_A(:,4); %ç ç¯ä¼ªè·è¯¯å·®ï¼Œè®¡ç®—å€¼å‡ç¯è·¯å€¼
+            delta_rhodot_A = rhodot - sv_A(:,8); %è½½æ³¢ç¯ä¼ªè·ç‡è¯¯å·®
+            lla = NF.pos; %æ¥æ”¶æœºä½ç½®
+            %----æ›´æ–°Aå¤©çº¿é€šé“è½½æ³¢è®¡æ•°ï¼Œä¿®æ­£æ•´å‘¨è¯¯å·®
             rb = [cosd(NF.att(2))*cosd(NF.att(1)), ...
                   cosd(NF.att(2))*sind(NF.att(1)), ...
-                 -sind(NF.att(2))] * bl; %µØÀíÏµÏÂ»ùÏßÊ¸Á¿
+                 -sind(NF.att(2))] * bl; %åœ°ç†ç³»ä¸‹åŸºçº¿çŸ¢é‡
             lat = lla(1) /180*pi;
             lon = lla(2) /180*pi;
             Cen = [-sin(lat)*cos(lon), -sin(lat)*sin(lon),  cos(lat);
@@ -440,91 +440,91 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
             rho = sum(rsp.*rsp, 2).^0.5;
             rspu = rsp ./ (rho*[1,1,1]);
             A = rspu * Cen';
-            dphase_cal = A*rb' / lamda; %ÓÃ×ËÌ¬ËãµÄÏàÎ»²î
-            dphase_error = dphase - dphase_cal; %ÏàÎ»²îÎó²î
-            dN = round(dphase_error); %Í¨µÀÕûÖÜĞŞÕıÁ¿£¬ÏàÎ»²îÎó²îÈ¡Õû£¬Èç¹ûÃ»ÓĞÖÜÌø£¬ÏàÎ»²îÓ¦ÔÚ0¸½½ü£¬È¡ÕûºóÎª0
-            dN(isnan(dN)) = 0; %ÎŞÏàÎ»²îµÄÍ¨µÀ²»ĞŞÕı
+            dphase_cal = A*rb' / lamda; %ç”¨å§¿æ€ç®—çš„ç›¸ä½å·®
+            dphase_error = dphase - dphase_cal; %ç›¸ä½å·®è¯¯å·®
+            dN = round(dphase_error); %é€šé“æ•´å‘¨ä¿®æ­£é‡ï¼Œç›¸ä½å·®è¯¯å·®å–æ•´ï¼Œå¦‚æœæ²¡æœ‰å‘¨è·³ï¼Œç›¸ä½å·®åº”åœ¨0é™„è¿‘ï¼Œå–æ•´åä¸º0
+            dN(isnan(dN)) = 0; %æ— ç›¸ä½å·®çš„é€šé“ä¸ä¿®æ­£
             dphase_mask( isnan(dphase)) = NaN;
             dphase_mask(~isnan(dphase)) = 0;
-            if NF.cnt>200 %ÂË²¨Æ÷ÎÈ¶¨ºóĞŞÕıÕûÖÜÎó²î
+            if NF.cnt>200 %æ»¤æ³¢å™¨ç¨³å®šåä¿®æ­£æ•´å‘¨è¯¯å·®
                 ki = find(dN~=0)';
                 for k=ki
                     channels_A(k).carrCirc = mod(channels_A(k).carrCirc-dN(k), circ_limit);
                 end
             end
-            %----¼ÆËãÎÀĞÇ¸ß¶È½Ç¡¢·½Î»½Ç¡¢ÎÀĞÇÔË¶¯ÒıÆğµÄÎ±¾àÂÊ¡¢ÔØ²¨¼ÓËÙ¶È
+            %----è®¡ç®—å«æ˜Ÿé«˜åº¦è§’ã€æ–¹ä½è§’ã€å«æ˜Ÿè¿åŠ¨å¼•èµ·çš„ä¼ªè·ç‡ã€è½½æ³¢åŠ é€Ÿåº¦
             ele = asind(A(:,3));
             azi = atan2d(-A(:,2),-A(:,1));
             rhodot1 = sum(-vs.*rspu, 2);
             carrAcc = -(rhodot1-rhodot0) / (dtpos/1000) / lamda;
             rhodot0 = rhodot1;
-            %----¼ÆËãBÌìÏß»·Â·Îó²î
-            % Í¨¹ı»ùÏßÊ¸Á¿¼ÆËãµÄBÌìÏßÎ»ÖÃ£¬Îó²îÓë×ËÌ¬Îó²îÓĞ¹Ø£¬²»´ó
-            % Í¨¹ı½ÇËÙ¶ÈºÍ»ùÏßÊ¸Á¿¼ÆËãµÄBÌìÏßËÙ¶ÈÓëÍÓÂİÒÇÔëÉùÓĞ¹Ø£¬0.4deg/s¡¢1m»ùÏß³¤¶È£¬¶ÔÓ¦ËÙ¶ÈÎó²î0.007m/s
-            rb = rb * Cen; %ecefÏÂ»ùÏßÊ¸Á¿
-            rp = rp + rb; %ecefÏÂBÌìÏßÎ»ÖÃÊ¸Á¿
+            %----è®¡ç®—Bå¤©çº¿ç¯è·¯è¯¯å·®
+            % é€šè¿‡åŸºçº¿çŸ¢é‡è®¡ç®—çš„Bå¤©çº¿ä½ç½®ï¼Œè¯¯å·®ä¸å§¿æ€è¯¯å·®æœ‰å…³ï¼Œä¸å¤§
+            % é€šè¿‡è§’é€Ÿåº¦å’ŒåŸºçº¿çŸ¢é‡è®¡ç®—çš„Bå¤©çº¿é€Ÿåº¦ä¸é™€èºä»ªå™ªå£°æœ‰å…³ï¼Œ0.4deg/sã€1måŸºçº¿é•¿åº¦ï¼Œå¯¹åº”é€Ÿåº¦è¯¯å·®0.007m/s
+            rb = rb * Cen; %ecefä¸‹åŸºçº¿çŸ¢é‡
+            rp = rp + rb; %ecefä¸‹Bå¤©çº¿ä½ç½®çŸ¢é‡
             rsp = ones(svN,1)*rp - rs;
             rho = sum(rsp.*rsp, 2).^0.5;
             rspu = rsp ./ (rho*[1,1,1]);
             Cnb = angle2dcm(NF.att(1)/180*pi, NF.att(2)/180*pi, NF.att(3)/180*pi);
-            vb = cross(imu_data(imu_index,2:4)/180*pi, [bl,0,0]) * Cnb * Cen; %ecefÏÂ¸Ë±ÛËÙ¶ÈÊ¸Á¿
-            vp = NF.vel*Cen + vb; %ecefÏÂBÌìÏßËÙ¶ÈÊ¸Á¿
+            vb = cross((imu_data(imu_index,2:4)-NF.bias(1:3))/180*pi, [bl,0,0]) * Cnb * Cen; %ecefä¸‹æ†è‡‚é€Ÿåº¦çŸ¢é‡
+            vp = NF.vel*Cen + vb; %ecefä¸‹Bå¤©çº¿é€Ÿåº¦çŸ¢é‡
             vsp = ones(svN,1)*vp - vs;
             rhodot = sum(vsp.*rspu, 2);
-            delta_rho_B = rho - sv_B(:,4); %Âë»·Î±¾àÎó²î£¬¼ÆËãÖµ¼õ»·Â·Öµ
-            delta_rhodot_B = rhodot - sv_B(:,8); %ÔØ²¨»·Î±¾àÂÊÎó²î
-            %----ĞŞÕıÍ¨µÀ£¨Í¨µÀĞèÒª×ÔĞĞ½øÈëµ½×´Ì¬2£©
+            delta_rho_B = rho - sv_B(:,4); %ç ç¯ä¼ªè·è¯¯å·®ï¼Œè®¡ç®—å€¼å‡ç¯è·¯å€¼
+            delta_rhodot_B = rhodot - sv_B(:,8); %è½½æ³¢ç¯ä¼ªè·ç‡è¯¯å·®
+            %----ä¿®æ­£é€šé“ï¼ˆé€šé“éœ€è¦è‡ªè¡Œè¿›å…¥åˆ°çŠ¶æ€2ï¼‰
             for k=1:svN
-                %====ÌìÏßA
+                %====å¤©çº¿A
                 if channels_A(k).state==2
-                    % ²»ÂÛĞÅºÅÇ¿Èõ£¬È«ĞŞÂëÏàÎ»£¨Âë³¬Ç°£¬²âÁ¿µÄÎ±¾àÆ«¶Ì£¬delta_rhoÎªÕı£©
+                    % ä¸è®ºä¿¡å·å¼ºå¼±ï¼Œå…¨ä¿®ç ç›¸ä½ï¼ˆç è¶…å‰ï¼Œæµ‹é‡çš„ä¼ªè·åçŸ­ï¼Œdelta_rhoä¸ºæ­£ï¼‰
                     channels_A(k).remCodePhase = channels_A(k).remCodePhase - delta_rho_A(k)/code_length;
-                    % ÈõĞÅºÅĞŞÔØ²¨ÆµÂÊ£¬Ë³±ã¸üĞÂÔØ²¨»·»ı·ÖÆ÷ÉÏÏÂ½ç£¨±¾µØÔØ²¨¿ì£¬²âÁ¿µÄÎ±¾àÂÊÆ«Ğ¡£¬delta_rhodotÎªÕı£©
+                    % å¼±ä¿¡å·ä¿®è½½æ³¢é¢‘ç‡ï¼Œé¡ºä¾¿æ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œï¼ˆæœ¬åœ°è½½æ³¢å¿«ï¼Œæµ‹é‡çš„ä¼ªè·ç‡åå°ï¼Œdelta_rhodotä¸ºæ­£ï¼‰
                     if channels_A(k).strength~=2
                         channels_A(k).PLL.Int = channels_A(k).PLL.Int - delta_rhodot_A(k)/lamda;
                         channels_A(k).PLL.upper = channels_A(k).PLL.Int + 1;
                         channels_A(k).PLL.lower = channels_A(k).PLL.Int - 1;
                     else
-                    % Ç¿ĞÅºÅÖ»¸üĞÂÔØ²¨»·»ı·ÖÆ÷ÉÏÏÂ½ç
-                        carrFreq0 = channels_A(k).PLL.Int - delta_rhodot_A(k)/lamda; %ĞŞÕıºóµÄÔØ²¨ÆµÂÊ£¬²»ÓÃÀ´¸üĞÂÔØ²¨»·»ı·ÖÆ÷£¬Ö»ÓÃÀ´¼ÆËã»ı·ÖÆ÷ÉÏÏÂ½ç
+                    % å¼ºä¿¡å·åªæ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œ
+                        carrFreq0 = channels_A(k).PLL.Int - delta_rhodot_A(k)/lamda; %ä¿®æ­£åçš„è½½æ³¢é¢‘ç‡ï¼Œä¸ç”¨æ¥æ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ï¼Œåªç”¨æ¥è®¡ç®—ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œ
                         channels_A(k).PLL.upper = carrFreq0 + 1;
                         channels_A(k).PLL.lower = carrFreq0 - 1;
                     end
-                    % ¸üĞÂÍ¨µÀÔØ²¨¼ÓËÙ¶È£¨Èç¹ûÃ»ÓĞÔØ²¨¼ÓËÙ¶ÈÇ°À¡£¬¶ş½×»·¸ú×ÙÆµÂÊĞ±ÆÂ£¬ÆµÂÊÓĞ¾²²î£©
+                    % æ›´æ–°é€šé“è½½æ³¢åŠ é€Ÿåº¦ï¼ˆå¦‚æœæ²¡æœ‰è½½æ³¢åŠ é€Ÿåº¦å‰é¦ˆï¼ŒäºŒé˜¶ç¯è·Ÿè¸ªé¢‘ç‡æ–œå¡ï¼Œé¢‘ç‡æœ‰é™å·®ï¼‰
                     if channels_A(k).trackStage=='D'
                         channels_A(k).carrAcc = carrAcc(k);
                     end
-                    % Ê¹¸Õ½øÈë2×´Ì¬µÄÍ¨µÀ½øÈëÉî×éºÏ¸ú×ÙÄ£Ê½
+                    % ä½¿åˆšè¿›å…¥2çŠ¶æ€çš„é€šé“è¿›å…¥æ·±ç»„åˆè·Ÿè¸ªæ¨¡å¼
                     if channels_A(k).trackStage=='T'
                         channels_A(k).trackStage = 'D';
                     end
                 end
-                %====ÌìÏßB
+                %====å¤©çº¿B
                 if channels_B(k).state==2
-                    % ²»ÂÛĞÅºÅÇ¿Èõ£¬È«ĞŞÂëÏàÎ»£¨Âë³¬Ç°£¬²âÁ¿µÄÎ±¾àÆ«¶Ì£¬delta_rhoÎªÕı£©
+                    % ä¸è®ºä¿¡å·å¼ºå¼±ï¼Œå…¨ä¿®ç ç›¸ä½ï¼ˆç è¶…å‰ï¼Œæµ‹é‡çš„ä¼ªè·åçŸ­ï¼Œdelta_rhoä¸ºæ­£ï¼‰
                     channels_B(k).remCodePhase = channels_B(k).remCodePhase - delta_rho_B(k)/code_length;
-                    % ÈõĞÅºÅĞŞÔØ²¨ÆµÂÊ£¬Ë³±ã¸üĞÂÔØ²¨»·»ı·ÖÆ÷ÉÏÏÂ½ç£¨±¾µØÔØ²¨¿ì£¬²âÁ¿µÄÎ±¾àÂÊÆ«Ğ¡£¬delta_rhodotÎªÕı£©
+                    % å¼±ä¿¡å·ä¿®è½½æ³¢é¢‘ç‡ï¼Œé¡ºä¾¿æ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œï¼ˆæœ¬åœ°è½½æ³¢å¿«ï¼Œæµ‹é‡çš„ä¼ªè·ç‡åå°ï¼Œdelta_rhodotä¸ºæ­£ï¼‰
                     if channels_B(k).strength~=2
                         channels_B(k).PLL.Int = channels_B(k).PLL.Int - delta_rhodot_B(k)/lamda;
                         channels_B(k).PLL.upper = channels_B(k).PLL.Int + 1;
                         channels_B(k).PLL.lower = channels_B(k).PLL.Int - 1;
                     else
-                    % Ç¿ĞÅºÅÖ»¸üĞÂÔØ²¨»·»ı·ÖÆ÷ÉÏÏÂ½ç
-                        carrFreq0 = channels_B(k).PLL.Int - delta_rhodot_B(k)/lamda; %ĞŞÕıºóµÄÔØ²¨ÆµÂÊ£¬²»ÓÃÀ´¸üĞÂÔØ²¨»·»ı·ÖÆ÷£¬Ö»ÓÃÀ´¼ÆËã»ı·ÖÆ÷ÉÏÏÂ½ç
+                    % å¼ºä¿¡å·åªæ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œ
+                        carrFreq0 = channels_B(k).PLL.Int - delta_rhodot_B(k)/lamda; %ä¿®æ­£åçš„è½½æ³¢é¢‘ç‡ï¼Œä¸ç”¨æ¥æ›´æ–°è½½æ³¢ç¯ç§¯åˆ†å™¨ï¼Œåªç”¨æ¥è®¡ç®—ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œ
                         channels_B(k).PLL.upper = carrFreq0 + 1;
                         channels_B(k).PLL.lower = carrFreq0 - 1;
                     end
-                    % ¸üĞÂÍ¨µÀÔØ²¨¼ÓËÙ¶È£¨Èç¹ûÃ»ÓĞÔØ²¨¼ÓËÙ¶ÈÇ°À¡£¬¶ş½×»·¸ú×ÙÆµÂÊĞ±ÆÂ£¬ÆµÂÊÓĞ¾²²î£©
+                    % æ›´æ–°é€šé“è½½æ³¢åŠ é€Ÿåº¦ï¼ˆå¦‚æœæ²¡æœ‰è½½æ³¢åŠ é€Ÿåº¦å‰é¦ˆï¼ŒäºŒé˜¶ç¯è·Ÿè¸ªé¢‘ç‡æ–œå¡ï¼Œé¢‘ç‡æœ‰é™å·®ï¼‰
                     if channels_B(k).trackStage=='D'
                         channels_B(k).carrAcc = carrAcc(k);
                     end
-                    % Ê¹¸Õ½øÈë2×´Ì¬µÄÍ¨µÀ½øÈëÉî×éºÏ¸ú×ÙÄ£Ê½
+                    % ä½¿åˆšè¿›å…¥2çŠ¶æ€çš„é€šé“è¿›å…¥æ·±ç»„åˆè·Ÿè¸ªæ¨¡å¼
                     if channels_B(k).trackStage=='T'
                         channels_B(k).trackStage = 'D';
                     end
                 end
             end
-            %----´æ´¢ÂË²¨Æ÷Êä³ö
+            %----å­˜å‚¨æ»¤æ³¢å™¨è¾“å‡º
             output_filter(no,:) = [NF.pos, NF.vel, NF.att];
             output_bias(no,:)   = NF.bias;
             output_imu(no,:)    = imu_data(imu_index,2:4);
@@ -534,8 +534,8 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
             output_svn(no,3)    = sum(~isnan(dphase_m));
         end
         
-        % 4.Ö±½Ó²â×Ë
-        if receiverState~=2 %Õı³£Ä£Ê½½øĞĞÄ£ºı¶ÈËÑË÷£¬ĞŞÕıÍ¨µÀÕûÖÜÎó²î
+        % 4.ç›´æ¥æµ‹å§¿
+        if receiverState~=2 %æ­£å¸¸æ¨¡å¼è¿›è¡Œæ¨¡ç³Šåº¦æœç´¢ï¼Œä¿®æ­£é€šé“æ•´å‘¨è¯¯å·®
             lat = lla(1) /180*pi;
             lon = lla(2) /180*pi;
             Cen = [-sin(lat)*cos(lon), -sin(lat)*sin(lon),  cos(lat);
@@ -546,75 +546,75 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
             rho = sum(rsp.*rsp, 2).^0.5;
             rspu = rsp ./ (rho*[1,1,1]);
             A = rspu * Cen';
-            ele = asind(A(:,3)); %ÎÀĞÇ¸ß¶È½Ç
-            azi = atan2d(-A(:,2),-A(:,1)); %ÎÀĞÇ·½Î»½Ç
-            An = [A/lamda, ones(svN,1)]; %µ¥Î»Ê¸Á¿×ª»»³ÉÔØ²¨ÖÜÊı£¬×îºóÌí¼ÓÈ«Îª1µÄÒ»ÁĞ
-            if sum(~isnan(dphase_m))<4 %ÓĞĞ§ÏàÎ»²îÊıÁ¿Ğ¡ÓÚ4£¬²»ÄÜ¶¨×Ë
-                if sum(~isnan(dphase))>=5 %Ä£ºı¶ÈËÑË÷
-                    % ´ÓA¡¢dphaseÖĞÈ¡
-                    index = find(~isnan(dphase)); %ÓĞÏàÎ»²îµÄË÷ÒıºÅ
+            ele = asind(A(:,3)); %å«æ˜Ÿé«˜åº¦è§’
+            azi = atan2d(-A(:,2),-A(:,1)); %å«æ˜Ÿæ–¹ä½è§’
+            An = [A/lamda, ones(svN,1)]; %å•ä½çŸ¢é‡è½¬æ¢æˆè½½æ³¢å‘¨æ•°ï¼Œæœ€åæ·»åŠ å…¨ä¸º1çš„ä¸€åˆ—
+            if sum(~isnan(dphase_m))<4 %æœ‰æ•ˆç›¸ä½å·®æ•°é‡å°äº4ï¼Œä¸èƒ½å®šå§¿
+                if sum(~isnan(dphase))>=5 %æ¨¡ç³Šåº¦æœç´¢
+                    % ä»Aã€dphaseä¸­å–
+                    index = find(~isnan(dphase)); %æœ‰ç›¸ä½å·®çš„ç´¢å¼•å·
                     Ac = A(index,:);
                     pc = dphase(index);
-                    pc = mod(pc,1); %È¡Ğ¡Êı²¿·Ö
+                    pc = mod(pc,1); %å–å°æ•°éƒ¨åˆ†
                     Rx = IAR(Ac, pc, lamda, bl+[-br,br], tr);
                     dphase_mask(isnan(dphase)) = NaN;
                     dphase_mask(~isnan(dphase)) = 0;
                     dN = round(dphase-An*Rx);
-                    dN(isnan(dN)) = 0; %ÎŞÓĞĞ§ÏàÎ»²îµÄÍ¨µÀ²»ĞŞÕıÕûÖÜÄ£ºı¶È
-                else %ÎŞ·¨½øĞĞÄ£ºı¶ÈËÑË÷
+                    dN(isnan(dN)) = 0; %æ— æœ‰æ•ˆç›¸ä½å·®çš„é€šé“ä¸ä¿®æ­£æ•´å‘¨æ¨¡ç³Šåº¦
+                else %æ— æ³•è¿›è¡Œæ¨¡ç³Šåº¦æœç´¢
                     Rx = NaN(4,1);
                     dphase_mask(isnan(dphase)) = NaN;
                     dN = zeros(svN,1);
                 end
-            else %ÓĞĞ§ÏàÎ»²îÊıÁ¿´óÓÚµÈÓÚ4£¬Ö±½Ó¶¨×Ë
-                % ´ÓAn¡¢dphase_mÖĞÈ¡
+            else %æœ‰æ•ˆç›¸ä½å·®æ•°é‡å¤§äºç­‰äº4ï¼Œç›´æ¥å®šå§¿
+                % ä»Anã€dphase_mä¸­å–
                 index = find(~isnan(dphase_m));
                 Ac = An(index,:);
                 pc = dphase_m(index);
-                W = diag(Ac(:,3).^3); %¸ß¶È½ÇÔ½¸ßÈ¨ÖµÔ½´ó
-                Rx = (Ac'*W*Ac) \ (Ac'*W*pc); %¼ÓÈ¨×îĞ¡¶ş³Ë
+                W = diag(Ac(:,3).^3); %é«˜åº¦è§’è¶Šé«˜æƒå€¼è¶Šå¤§
+                Rx = (Ac'*W*Ac) \ (Ac'*W*pc); %åŠ æƒæœ€å°äºŒä¹˜
                 dphase_mask(isnan(dphase)) = NaN;
                 dphase_mask(~isnan(dphase)) = 0;
                 dN = round(dphase-An*Rx);
                 dN(isnan(dN)) = 0;
             end
-            % ĞŞÕı´æÔÚÕûÖÜÎó²îµÄÍ¨µÀ
-            ki = find(dN~=0)'; %Ë÷Òı£¬ĞĞÏòÁ¿
+            % ä¿®æ­£å­˜åœ¨æ•´å‘¨è¯¯å·®çš„é€šé“
+            ki = find(dN~=0)'; %ç´¢å¼•ï¼Œè¡Œå‘é‡
             for k=ki
                 channels_A(k).carrCirc = mod(channels_A(k).carrCirc-dN(k), circ_limit);
             end
-        else %Éî×éºÏÄ£Ê½²»½øĞĞÄ£ºı¶ÈËÑË÷£¬²»ĞŞÕıÍ¨µÀÕûÖÜÎó²î£¬ÔÚµ¼º½ÂË²¨Æ÷³ÌĞò¶ÎĞŞÕı
+        else %æ·±ç»„åˆæ¨¡å¼ä¸è¿›è¡Œæ¨¡ç³Šåº¦æœç´¢ï¼Œä¸ä¿®æ­£é€šé“æ•´å‘¨è¯¯å·®ï¼Œåœ¨å¯¼èˆªæ»¤æ³¢å™¨ç¨‹åºæ®µä¿®æ­£
             if sum(~isnan(dphase_m))<4
                 Rx = NaN(4,1);
             else
-                An = [A/lamda, ones(svN,1)]; %AÔÚµ¼º½ÂË²¨Æ÷ÀïÓĞËã
+                An = [A/lamda, ones(svN,1)]; %Aåœ¨å¯¼èˆªæ»¤æ³¢å™¨é‡Œæœ‰ç®—
                 index = find(~isnan(dphase_m));
                 Ac = An(index,:);
                 pc = dphase_m(index);
-%                 W = diag(Ac(:,3).^3); %¸ß¶È½ÇÔ½¸ßÈ¨ÖµÔ½´ó
+%                 W = diag(Ac(:,3).^3); %é«˜åº¦è§’è¶Šé«˜æƒå€¼è¶Šå¤§
                 W = diag(1./sigma_dphase(index)')^2;
-                Rx = (Ac'*W*Ac) \ (Ac'*W*pc); %¼ÓÈ¨×îĞ¡¶ş³Ë
+                Rx = (Ac'*W*Ac) \ (Ac'*W*pc); %åŠ æƒæœ€å°äºŒä¹˜
             end
         end
         bl_length = norm(Rx(1:3));
         psi = atan2d(Rx(2),Rx(1));
         theta = -asind(Rx(3)/bl_length);
         
-        % 5.Ê±ÖÓ·´À¡ĞŞÕı
+        % 5.æ—¶é’Ÿåé¦ˆä¿®æ­£
         if receiverState==1
             if ~isnan(pos(7))
-                deltaFreq = deltaFreq + 10*pos(8)*dtpos/1000; %ÖÓÆµ²îÀÛ¼Ó
-                ta = ta - sec2smu(10*pos(7)*dtpos/1000); %Ê±ÖÓĞŞÕı£¨¿ÉÒÔ²»ÓÃ½øÎ»£¬ÔÚÏÂ´Î¸üĞÂÊ±½øÎ»£©
+                deltaFreq = deltaFreq + 10*pos(8)*dtpos/1000; %é’Ÿé¢‘å·®ç´¯åŠ 
+                ta = ta - sec2smu(10*pos(7)*dtpos/1000); %æ—¶é’Ÿä¿®æ­£ï¼ˆå¯ä»¥ä¸ç”¨è¿›ä½ï¼Œåœ¨ä¸‹æ¬¡æ›´æ–°æ—¶è¿›ä½ï¼‰
             end
             if ~isnan(Rx(4))
-                deltaPath = deltaPath + 10*Rx(4)*dtpos/1000; %Â·¾¶²îÀÛ¼Ó
+                deltaPath = deltaPath + 10*Rx(4)*dtpos/1000; %è·¯å¾„å·®ç´¯åŠ 
             end
         elseif receiverState==2
             deltaFreq = deltaFreq + NF.dtv;
             ta = ta - sec2smu(NF.dtr);
         end
         
-        % 6.´æ´¢Êä³ö
+        % 6.å­˜å‚¨è¾“å‡º
         output_ta(no,1)     = tp(1) + tp(2)/1e3 + tp(3)/1e6;
         output_ta(no,2)     = receiverState;
         output_sv_A(:,:,no) = sv_A;
@@ -625,28 +625,28 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
         output_pos(no,:)    = pos;
         output_Rx(no,:)     = [psi, theta, bl_length, Rx(4)];
         
-        % 7.¼ì²é³õÊ¼»¯
+        % 7.æ£€æŸ¥åˆå§‹åŒ–
         if receiverState==0 && ~isnan(pos(7))
-            if abs(pos(7))>0.1e-3 %ÖÓ²î´óÓÚ0.1ms£¬ĞŞÕı½ÓÊÕ»úÊ±¼ä
-                ta = ta - sec2smu(pos(7)); %Ê±ÖÓĞŞÕı
+            if abs(pos(7))>0.1e-3 %é’Ÿå·®å¤§äº0.1msï¼Œä¿®æ­£æ¥æ”¶æœºæ—¶é—´
+                ta = ta - sec2smu(pos(7)); %æ—¶é’Ÿä¿®æ­£
                 ta = time_carry(ta);
-                imu_index = find(imu_data(:,1)>(ta(1)+ta(2)/1e3+ta(3)/1e6), 1); %¸üĞÂÏÂ´Î¶¨Î»Ê±¼ä
-            else %ÖÓ²îĞ¡ÓÚ0.1ms£¬³õÊ¼»¯½áÊø
+                imu_index = find(imu_data(:,1)>(ta(1)+ta(2)/1e3+ta(3)/1e6), 1); %æ›´æ–°ä¸‹æ¬¡å®šä½æ—¶é—´
+            else %é’Ÿå·®å°äº0.1msï¼Œåˆå§‹åŒ–ç»“æŸ
                 receiverState = 1;
             end
         end
         
-        % 8.³õÊ¼»¯µ¼º½ÂË²¨Æ÷
+        % 8.åˆå§‹åŒ–å¯¼èˆªæ»¤æ³¢å™¨
         if receiverState==1
-            if abs(pos(8))<1e-10 && abs(Rx(4))<0.005 %ÖÓÆµ²îÊÕÁ²¡¢Â·¾¶²îÊÕÁ²
-                %----³õÊ¼»¯ÂË²¨Æ÷
+            if abs(pos(8))<1e-10 && abs(Rx(4))<0.005 %é’Ÿé¢‘å·®æ”¶æ•›ã€è·¯å¾„å·®æ”¶æ•›
+                %----åˆå§‹åŒ–æ»¤æ³¢å™¨
                 NF = navFilter_deep_dphase(pos(1:3), [0,0,0], [psi,theta,0], dtpos/1000, lamda, bl, para);
-                %----ÎÀĞÇÔË¶¯´øÀ´µÄÎ±¾àÂÊ£¬ÓÃÀ´ËãÔØ²¨¼ÓËÙ¶È
-                [~, rhodot0, ~, ~, ~] = cal_rho_rhodot(rs, vs, pos(1:3), [0,0,0]); %ÔØÌåËÙ¶ÈÎª0
-                %----¼ÆËã¸÷Í¨µÀµÄÔØ²¨ÆµÂÊ£¬È·¶¨ÔØ²¨»·»ı·ÖÆ÷ÉÏÏÂ½ç
+                %----å«æ˜Ÿè¿åŠ¨å¸¦æ¥çš„ä¼ªè·ç‡ï¼Œç”¨æ¥ç®—è½½æ³¢åŠ é€Ÿåº¦
+                [~, rhodot0, ~, ~, ~] = cal_rho_rhodot(rs, vs, pos(1:3), [0,0,0]); %è½½ä½“é€Ÿåº¦ä¸º0
+                %----è®¡ç®—å„é€šé“çš„è½½æ³¢é¢‘ç‡ï¼Œç¡®å®šè½½æ³¢ç¯ç§¯åˆ†å™¨ä¸Šä¸‹ç•Œ
                 [~, rhodot , ~, ~, ~] = cal_rho_rhodot(rs, vs, pos(1:3), pos(4:6));
-                carrFreq0 = -(rhodot/299792458 + deltaFreq) * 1575.42e6; %½ÓÊÕ»úÖÓÆµ¿ì£¬²âµÄÔØ²¨ÆµÂÊÆ«Ğ¡
-                %----¸üĞÂÍ¨µÀ¸ú×ÙÄ£Ê½
+                carrFreq0 = -(rhodot/299792458 + deltaFreq) * 1575.42e6; %æ¥æ”¶æœºé’Ÿé¢‘å¿«ï¼Œæµ‹çš„è½½æ³¢é¢‘ç‡åå°
+                %----æ›´æ–°é€šé“è·Ÿè¸ªæ¨¡å¼
                 for k=1:svN
                     if channels_A(k).state==2
                         channels_A(k).trackStage = 'D';
@@ -659,27 +659,27 @@ for t=1:msToProcess %ÃûÒåÉÏµÄÊ±¼ä£¬ÒÔ²ÉÑùµãÊı¼ÆËã
                         channels_B(k).PLL.lower = carrFreq0(k) - 1;
                     end
                 end
-                %----¸üĞÂ½ÓÊÕ»ú×´Ì¬
+                %----æ›´æ–°æ¥æ”¶æœºçŠ¶æ€
                 receiverState = 2;
             end
         end
         
-        % 9.¸üĞÂÏÂ´Î¶¨Î»Ê±¼ä
-        imu_index = imu_index + 1; %imuÊı¾İË÷Òı¼Ó1£¬Ö¸ÏòÏÂÒ»¸ö
+        % 9.æ›´æ–°ä¸‹æ¬¡å®šä½æ—¶é—´
+        imu_index = imu_index + 1; %imuæ•°æ®ç´¢å¼•åŠ 1ï¼ŒæŒ‡å‘ä¸‹ä¸€ä¸ª
         tp = sec2smu(imu_data(imu_index,1));
-        no = no + 1; %Ö¸ÏòÏÂÒ»´æ´¢Î»ÖÃ
+        no = no + 1; %æŒ‡å‘ä¸‹ä¸€å­˜å‚¨ä½ç½®
         
     end %end if dtp>=0
 end
 
-%% ¹Ø±ÕÎÄ¼ş£¬¹Ø±Õ½ø¶ÈÌõ
+%% å…³é—­æ–‡ä»¶ï¼Œå…³é—­è¿›åº¦æ¡
 fclose(fileID_A);
 fclose(fileID_B);
 fclose(logID_A);
 fclose(logID_B);
 close(f);
 
-%% É¾³ı¿Õ°×Êı¾İ
+%% åˆ é™¤ç©ºç™½æ•°æ®
 for k=1:svN
     trackResults_A(k) = trackResult_clean(trackResults_A(k));
     trackResults_B(k) = trackResult_clean(trackResults_B(k));
@@ -697,7 +697,7 @@ output_imu(no:end,:)        = [];
 output_bias(no:end,:)       = [];
 output_P(no:end,:)          = [];
 output_svn(no:end,:)        = [];
-% É¾³ı½ÓÊÕ»úÎ´³õÊ¼»¯Ê±µÄÊı¾İ
+% åˆ é™¤æ¥æ”¶æœºæœªåˆå§‹åŒ–æ—¶çš„æ•°æ®
 index = find(output_ta(:,2)==0);
 output_ta(index,:)          = [];
 output_pos(index,:)         = [];
@@ -713,116 +713,116 @@ output_bias(index,:)        = [];
 output_P(index,:)           = [];
 output_svn(index,:)         = [];
 
-%% ´òÓ¡Í¨µÀÈÕÖ¾
+%% æ‰“å°é€šé“æ—¥å¿—
 clc
 disp('<--------antenna A-------->')
 print_log([result_path,'\logA.txt'], svList);
 disp('<--------antenna B-------->')
 print_log([result_path,'\logB.txt'], svList);
 
-%% ±£´æĞÇÀú
-% Ã¿´ÎÔËĞĞÍê¶¼»á±£´æ£¬ÓĞĞÂĞÇÀú×Ô¶¯Ìí¼Ó
+%% ä¿å­˜æ˜Ÿå†
+% æ¯æ¬¡è¿è¡Œå®Œéƒ½ä¼šä¿å­˜ï¼Œæœ‰æ–°æ˜Ÿå†è‡ªåŠ¨æ·»åŠ 
 for k=1:svN
     PRN = channels_A(k).PRN;
-    if isnan(ephemeris(1,PRN)) %ĞÇÀúÎÄ¼şÖĞÃ»ÓĞ
+    if isnan(ephemeris(1,PRN)) %æ˜Ÿå†æ–‡ä»¶ä¸­æ²¡æœ‰
         if ~isnan(channels_A(k).ephemeris(1))
-            ephemeris(:,PRN) = channels_A(k).ephemeris; %²åÈëĞÇÀú
+            ephemeris(:,PRN) = channels_A(k).ephemeris; %æ’å…¥æ˜Ÿå†
         elseif ~isnan(channels_B(k).ephemeris(1))
-            ephemeris(:,PRN) = channels_B(k).ephemeris; %²åÈëĞÇÀú
+            ephemeris(:,PRN) = channels_B(k).ephemeris; %æ’å…¥æ˜Ÿå†
         end
     end
 end
 save(ephemeris_file, 'ephemeris', 'ion');
 
-%% »­¸ú×Ù½á¹û
+%% ç”»è·Ÿè¸ªç»“æœ
 plot_track_double(sampleFreq, msToProcess, svList, trackResults_A, trackResults_B);
 
-%% »­ÏàÎ»²î
-plot_svdata(output_dphase, svList, 'ÏàÎ»²î');
+%% ç”»ç›¸ä½å·®
+plot_svdata(output_dphase, svList, 'ç›¸ä½å·®');
 
-%% Çå³ı±äÁ¿
+%% æ¸…é™¤å˜é‡
 keepVariables = { ...
 'sampleFreq'; 'msToProcess';
-'p0'; 'tf'; 'svList'; 'svN'; %ÎªÁË»­ĞÇ×ùÍ¼
-'channels_A'; 'trackResults_A'; %AÌìÏß¸ú×ÙĞÅÏ¢
-'channels_B'; 'trackResults_B'; %BÌìÏß¸ú×ÙĞÅÏ¢
-'output_sv_A'; 'output_sv_B'; %ÎÀĞÇĞÅÏ¢
-'ephemeris'; 'ion'; %ĞÇÀú
-'imu_data'; %IMUÊı¾İ
+'p0'; 'tf'; 'svList'; 'svN'; %ä¸ºäº†ç”»æ˜Ÿåº§å›¾
+'channels_A'; 'trackResults_A'; %Aå¤©çº¿è·Ÿè¸ªä¿¡æ¯
+'channels_B'; 'trackResults_B'; %Bå¤©çº¿è·Ÿè¸ªä¿¡æ¯
+'output_sv_A'; 'output_sv_B'; %å«æ˜Ÿä¿¡æ¯
+'ephemeris'; 'ion'; %æ˜Ÿå†
+'imu_data'; %IMUæ•°æ®
 'output_ta'; 'output_pos'; 'output_df'; 'output_dp'; 'output_dphase'; 'output_Rx';
 'output_filter'; 'output_bias'; 'output_imu'; 'output_P'; 'output_svn';
 'file';
 };
 clearvars('-except', keepVariables{:})
 
-%% ±£´æ½á¹û
-% ÒÔÊ±¼äÃüÃû
+%% ä¿å­˜ç»“æœ
+% ä»¥æ—¶é—´å‘½å
 t0 = clock;
 time_str = sprintf('%4d%02d%02d_%02d%02d%02d', t0(1),t0(2),t0(3),t0(4),t0(5),floor(t0(6)));
 result_path = fileread('.\temp\resultPath.txt');
 save([result_path,'\',time_str,'__deeply_double__',file(1:end-8),'.mat'])
 
-%% ¼ÆÊ±½áÊø
+%% è®¡æ—¶ç»“æŸ
 toc
 
-%% º¯Êı
+%% å‡½æ•°
 function ch = GPS_L1_CA_channel_struct()
-% ÉùÃ÷Í¨µÀ½á¹¹ÌåËùÓĞ³¡
-    ch.PRN              = []; %ÎÀĞÇ±àºÅ
-    ch.state            = []; %Í¨µÀ×´Ì¬£¨Êı×Ö£©
-    ch.trackStage       = []; %¸ú×Ù½×¶Î£¨×Ö·û£©
-    ch.msgStage         = []; %µçÎÄ½âÎö½×¶Î£¨×Ö·û£©
-    ch.strength         = []; %ĞÅºÅÇ¿¶È£¨Êı×Ö£©
-    ch.cnt_t            = []; %¸ú×ÙÊ±ÓÃµÄ¼ÆÊıÆ÷
-    ch.cnt_m            = []; %µçÎÄ½âÎöÊ±ÓÃµÄ¼ÆÊıÆ÷
-    ch.stableCnt        = []; %ĞÅºÅÎÈ¶¨¼ÆÊıÆ÷
-    ch.code             = []; %Î±Âë
-    ch.timeIntMs        = []; %»ı·ÖÊ±¼ä£¬ms
-    ch.trackDataTail    = []; %¸ú×Ù¿ªÊ¼µãÔÚÊı¾İ»º´æÖĞµÄÎ»ÖÃ
-    ch.blkSize          = []; %¸ú×ÙÊı¾İ¶Î²ÉÑùµã¸öÊı
-    ch.trackDataHead    = []; %¸ú×Ù½áÊøµãÔÚÊı¾İ»º´æÖĞµÄÎ»ÖÃ
-    ch.dataIndex        = []; %¸ú×Ù¿ªÊ¼µãÔÚÎÄ¼şÖĞµÄÎ»ÖÃ
-    ch.ts0              = []; %¸ú×Ù¿ªÊ¼µãËùÔÚÂëÖÜÆÚµÄÀíÂÛ·¢ÉäÊ±¼ä£¬ms
-    ch.carrNco          = []; %ÔØ²¨·¢ÉúÆ÷ÆµÂÊ
-    ch.codeNco          = []; %Âë·¢ÉúÆ÷ÆµÂÊ
-    ch.carrAcc          = []; %ÔØ²¨ÆµÂÊ¼ÓËÙ¶È
-    ch.carrFreq         = []; %ÔØ²¨ÆµÂÊ²âÁ¿
-    ch.codeFreq         = []; %ÂëÆµÂÊ²âÁ¿
-    ch.remCarrPhase     = []; %¸ú×Ù¿ªÊ¼µãµÄÔØ²¨ÏàÎ»
-    ch.remCodePhase     = []; %¸ú×Ù¿ªÊ¼µãµÄÂëÏàÎ»
-    ch.carrCirc         = []; %¼ÇÂ¼ÔØ²¨¾­¹ıµÄÕûÖÜÊı£¬0~999
-    ch.I_P0             = []; %ÉÏ´Î¸ú×ÙµÄI_P
-    ch.Q_P0             = []; %ÉÏ´Î¸ú×ÙµÄQ_P
-    ch.FLL              = []; %ËøÆµ»·£¨½á¹¹Ìå£©
-    ch.PLL              = []; %ËøÏà»·£¨½á¹¹Ìå£©
-    ch.DLL              = []; %ÑÓ³ÙËø¶¨»·£¨½á¹¹Ìå£©
-    ch.bitSyncTable     = []; %±ÈÌØÍ¬²½Í³¼Æ±í
-    ch.bitBuff          = []; %±ÈÌØ»º´æ
-    ch.frameBuff        = []; %Ö¡»º´æ
-    ch.frameBuffPoint   = []; %Ö¡»º´æÖ¸Õë
-    ch.ephemeris        = []; %ĞÇÀú
-    ch.codeStd          = []; %¼ÆËãÂë¼øÏàÆ÷Îó²î±ê×¼²î½á¹¹Ìå
-    ch.carrStd          = []; %¼ÆËãÔØ²¨¼øÏàÆ÷Îó²î±ê×¼²î½á¹¹Ìå
-    ch.NWmean           = []; %¼ÆËãNBP/WBP¾ùÖµ½á¹¹Ìå
-    ch.CN0              = []; %Æ½¾ùÔØÔë±È
-    ch.CN0i             = []; %Ë²Ê±ÔØÔë±È
+% å£°æ˜é€šé“ç»“æ„ä½“æ‰€æœ‰åœº
+    ch.PRN              = []; %å«æ˜Ÿç¼–å·
+    ch.state            = []; %é€šé“çŠ¶æ€ï¼ˆæ•°å­—ï¼‰
+    ch.trackStage       = []; %è·Ÿè¸ªé˜¶æ®µï¼ˆå­—ç¬¦ï¼‰
+    ch.msgStage         = []; %ç”µæ–‡è§£æé˜¶æ®µï¼ˆå­—ç¬¦ï¼‰
+    ch.strength         = []; %ä¿¡å·å¼ºåº¦ï¼ˆæ•°å­—ï¼‰
+    ch.cnt_t            = []; %è·Ÿè¸ªæ—¶ç”¨çš„è®¡æ•°å™¨
+    ch.cnt_m            = []; %ç”µæ–‡è§£ææ—¶ç”¨çš„è®¡æ•°å™¨
+    ch.stableCnt        = []; %ä¿¡å·ç¨³å®šè®¡æ•°å™¨
+    ch.code             = []; %ä¼ªç 
+    ch.timeIntMs        = []; %ç§¯åˆ†æ—¶é—´ï¼Œms
+    ch.trackDataTail    = []; %è·Ÿè¸ªå¼€å§‹ç‚¹åœ¨æ•°æ®ç¼“å­˜ä¸­çš„ä½ç½®
+    ch.blkSize          = []; %è·Ÿè¸ªæ•°æ®æ®µé‡‡æ ·ç‚¹ä¸ªæ•°
+    ch.trackDataHead    = []; %è·Ÿè¸ªç»“æŸç‚¹åœ¨æ•°æ®ç¼“å­˜ä¸­çš„ä½ç½®
+    ch.dataIndex        = []; %è·Ÿè¸ªå¼€å§‹ç‚¹åœ¨æ–‡ä»¶ä¸­çš„ä½ç½®
+    ch.ts0              = []; %è·Ÿè¸ªå¼€å§‹ç‚¹æ‰€åœ¨ç å‘¨æœŸçš„ç†è®ºå‘å°„æ—¶é—´ï¼Œms
+    ch.carrNco          = []; %è½½æ³¢å‘ç”Ÿå™¨é¢‘ç‡
+    ch.codeNco          = []; %ç å‘ç”Ÿå™¨é¢‘ç‡
+    ch.carrAcc          = []; %è½½æ³¢é¢‘ç‡åŠ é€Ÿåº¦
+    ch.carrFreq         = []; %è½½æ³¢é¢‘ç‡æµ‹é‡
+    ch.codeFreq         = []; %ç é¢‘ç‡æµ‹é‡
+    ch.remCarrPhase     = []; %è·Ÿè¸ªå¼€å§‹ç‚¹çš„è½½æ³¢ç›¸ä½
+    ch.remCodePhase     = []; %è·Ÿè¸ªå¼€å§‹ç‚¹çš„ç ç›¸ä½
+    ch.carrCirc         = []; %è®°å½•è½½æ³¢ç»è¿‡çš„æ•´å‘¨æ•°ï¼Œ0~999
+    ch.I_P0             = []; %ä¸Šæ¬¡è·Ÿè¸ªçš„I_P
+    ch.Q_P0             = []; %ä¸Šæ¬¡è·Ÿè¸ªçš„Q_P
+    ch.FLL              = []; %é”é¢‘ç¯ï¼ˆç»“æ„ä½“ï¼‰
+    ch.PLL              = []; %é”ç›¸ç¯ï¼ˆç»“æ„ä½“ï¼‰
+    ch.DLL              = []; %å»¶è¿Ÿé”å®šç¯ï¼ˆç»“æ„ä½“ï¼‰
+    ch.bitSyncTable     = []; %æ¯”ç‰¹åŒæ­¥ç»Ÿè®¡è¡¨
+    ch.bitBuff          = []; %æ¯”ç‰¹ç¼“å­˜
+    ch.frameBuff        = []; %å¸§ç¼“å­˜
+    ch.frameBuffPoint   = []; %å¸§ç¼“å­˜æŒ‡é’ˆ
+    ch.ephemeris        = []; %æ˜Ÿå†
+    ch.codeStd          = []; %è®¡ç®—ç é‰´ç›¸å™¨è¯¯å·®æ ‡å‡†å·®ç»“æ„ä½“
+    ch.carrStd          = []; %è®¡ç®—è½½æ³¢é‰´ç›¸å™¨è¯¯å·®æ ‡å‡†å·®ç»“æ„ä½“
+    ch.NWmean           = []; %è®¡ç®—NBP/WBPå‡å€¼ç»“æ„ä½“
+    ch.CN0              = []; %å¹³å‡è½½å™ªæ¯”
+    ch.CN0i             = []; %ç¬æ—¶è½½å™ªæ¯”
 end
 
 function ch = GPS_L1_CA_channel_init(ch, acqResult, n, sampleFreq)
-% Í¨µÀ½á¹¹Ìå³õÊ¼»¯£¬Ö´ĞĞÍêºóÍ¨µÀ±»¼¤»î
-% n±íÊ¾ÒÑ¾­¾­¹ıÁË¶àÉÙ¸ö²ÉÑùµã
-% ĞèÒªÔ¤ÏÈ¸³PRN
-    code = GPS_L1_CA_generate(ch.PRN); %C/AÂë
+% é€šé“ç»“æ„ä½“åˆå§‹åŒ–ï¼Œæ‰§è¡Œå®Œåé€šé“è¢«æ¿€æ´»
+% nè¡¨ç¤ºå·²ç»ç»è¿‡äº†å¤šå°‘ä¸ªé‡‡æ ·ç‚¹
+% éœ€è¦é¢„å…ˆèµ‹PRN
+    code = GPS_L1_CA_generate(ch.PRN); %C/Aç 
 
-    % ch.PRN ÎÀĞÇºÅ²»±ä
-    ch.state = 1; %¼¤»îÍ¨µÀ
-    ch.trackStage = 'F'; %ÆµÂÊÇ£Òı
-    ch.msgStage = 'I'; %¿ÕÏĞ
-    ch.strength = 0; %ĞÅºÅÊ§Ëø
+    % ch.PRN å«æ˜Ÿå·ä¸å˜
+    ch.state = 1; %æ¿€æ´»é€šé“
+    ch.trackStage = 'F'; %é¢‘ç‡ç‰µå¼•
+    ch.msgStage = 'I'; %ç©ºé—²
+    ch.strength = 0; %ä¿¡å·å¤±é”
     ch.cnt_t = 0;
     ch.cnt_m = 0;
     ch.stableCnt = 0;
-    ch.code = [code(end),code,code(1)]'; %ÁĞÏòÁ¿£¬ÎªÁËÇó»ı·ÖÊ±ÓÃÊ¸Á¿Ïà³Ë¼ÓËÙ
+    ch.code = [code(end),code,code(1)]'; %åˆ—å‘é‡ï¼Œä¸ºäº†æ±‚ç§¯åˆ†æ—¶ç”¨çŸ¢é‡ç›¸ä¹˜åŠ é€Ÿ
     ch.timeIntMs = 1;
     ch.trackDataTail = sampleFreq*0.001 - acqResult(1) + 2;
     ch.blkSize = sampleFreq*0.001;
@@ -847,8 +847,8 @@ function ch = GPS_L1_CA_channel_init(ch, acqResult, n, sampleFreq)
     ch.PLL.K1 = K1;
     ch.PLL.K2 = K2;
     ch.PLL.Int = 0;
-    ch.PLL.upper = 0; %»ı·ÖÆ÷ÉÏ½ç
-    ch.PLL.lower = 0; %»ı·ÖÆ÷ÏÂ½ç
+    ch.PLL.upper = 0; %ç§¯åˆ†å™¨ä¸Šç•Œ
+    ch.PLL.lower = 0; %ç§¯åˆ†å™¨ä¸‹ç•Œ
 
     [K1, K2] = orderTwoLoopCoef(2, 0.707, 1);
     ch.DLL.K1 = K1;
@@ -856,27 +856,27 @@ function ch = GPS_L1_CA_channel_init(ch, acqResult, n, sampleFreq)
     ch.DLL.Int = ch.codeNco;
 
     ch.bitSyncTable = zeros(1,20);
-    ch.bitBuff = zeros(2,20); %µÚÒ»ĞĞI_P£¬µÚ¶şĞĞQ_P
+    ch.bitBuff = zeros(2,20); %ç¬¬ä¸€è¡ŒI_Pï¼Œç¬¬äºŒè¡ŒQ_P
     ch.frameBuff = zeros(1,1502);
     ch.frameBuffPoint = 0;
-    % ch.ephemeris ĞÇÀú²»±ä
+    % ch.ephemeris æ˜Ÿå†ä¸å˜
 
-    % ¼ÆËãÂë¼øÏàÆ÷Îó²î±ê×¼²î½á¹¹Ìå
+    % è®¡ç®—ç é‰´ç›¸å™¨è¯¯å·®æ ‡å‡†å·®ç»“æ„ä½“
     ch.codeStd.buff = zeros(1,200);
     ch.codeStd.buffSize = length(ch.codeStd.buff);
     ch.codeStd.buffPoint = 0;
     ch.codeStd.E0 = 0;
     ch.codeStd.D0 = 0;
 
-    % ¼ÆËãÔØ²¨¼øÏàÆ÷Îó²î±ê×¼²î½á¹¹Ìå
+    % è®¡ç®—è½½æ³¢é‰´ç›¸å™¨è¯¯å·®æ ‡å‡†å·®ç»“æ„ä½“
     ch.carrStd.buff = zeros(1,200);
     ch.carrStd.buffSize = length(ch.carrStd.buff);
     ch.carrStd.buffPoint = 0;
     ch.carrStd.E0 = 0;
     ch.carrStd.D0 = 0;
 
-    % ¼ÆËãNBP/WBP¾ùÖµ½á¹¹Ìå
-    ch.NWmean.buff = zeros(1,50); %50¸öµãÇó¾ùÖµ
+    % è®¡ç®—NBP/WBPå‡å€¼ç»“æ„ä½“
+    ch.NWmean.buff = zeros(1,50); %50ä¸ªç‚¹æ±‚å‡å€¼
     ch.NWmean.buffSize = length(ch.NWmean.buff);
     ch.NWmean.buffPoint = 0;
     ch.NWmean.E0 = 0;
@@ -885,25 +885,25 @@ function ch = GPS_L1_CA_channel_init(ch, acqResult, n, sampleFreq)
 end
 
 function trackResult = trackResult_struct(m)
-% ¸ú×Ù½á¹û½á¹¹Ìå
+% è·Ÿè¸ªç»“æœç»“æ„ä½“
     trackResult.PRN = 0;
-    trackResult.n = 1; %Ö¸Ïòµ±Ç°´æ´¢µÄĞĞºÅ
-    trackResult.dataIndex     = zeros(m,1); %ÂëÖÜÆÚ¿ªÊ¼²ÉÑùµãÔÚÔ­Ê¼Êı¾İÎÄ¼şÖĞµÄÎ»ÖÃ
-    trackResult.ts0           = zeros(m,1); %ÂëÖÜÆÚÀíÂÛ·¢ÉäÊ±¼ä£¬ms
-    trackResult.remCodePhase  = zeros(m,1); %ÂëÖÜÆÚ¿ªÊ¼²ÉÑùµãµÄÂëÏàÎ»£¬ÂëÆ¬
-    trackResult.codeFreq      = zeros(m,1); %ÂëÆµÂÊ
-    trackResult.remCarrPhase  = zeros(m,1); %ÂëÖÜÆÚ¿ªÊ¼²ÉÑùµãµÄÔØ²¨ÏàÎ»£¬ÖÜ
-    trackResult.carrFreq      = zeros(m,1); %ÔØ²¨ÆµÂÊ
+    trackResult.n = 1; %æŒ‡å‘å½“å‰å­˜å‚¨çš„è¡Œå·
+    trackResult.dataIndex     = zeros(m,1); %ç å‘¨æœŸå¼€å§‹é‡‡æ ·ç‚¹åœ¨åŸå§‹æ•°æ®æ–‡ä»¶ä¸­çš„ä½ç½®
+    trackResult.ts0           = zeros(m,1); %ç å‘¨æœŸç†è®ºå‘å°„æ—¶é—´ï¼Œms
+    trackResult.remCodePhase  = zeros(m,1); %ç å‘¨æœŸå¼€å§‹é‡‡æ ·ç‚¹çš„ç ç›¸ä½ï¼Œç ç‰‡
+    trackResult.codeFreq      = zeros(m,1); %ç é¢‘ç‡
+    trackResult.remCarrPhase  = zeros(m,1); %ç å‘¨æœŸå¼€å§‹é‡‡æ ·ç‚¹çš„è½½æ³¢ç›¸ä½ï¼Œå‘¨
+    trackResult.carrFreq      = zeros(m,1); %è½½æ³¢é¢‘ç‡
     trackResult.I_Q           = zeros(m,6); %[I_P,I_E,I_L,Q_P,Q_E,Q_L]
-    trackResult.disc          = zeros(m,5); %[codeError,std, carrError,std, freqError]£¬¼øÏàÆ÷
-    trackResult.bitStartFlag  = zeros(m,1); %±ÈÌØ¿ªÊ¼±êÖ¾
-    trackResult.CN0           = zeros(m,2); %ÔØÔë±È£¨Æ½¾ùºÍË²Ê±£©
-    trackResult.carrAcc       = zeros(m,1); %ÔØ²¨¼ÓËÙ¶È
-    trackResult.strength      = zeros(m,1); %ĞÅºÅÇ¿¶È
+    trackResult.disc          = zeros(m,5); %[codeError,std, carrError,std, freqError]ï¼Œé‰´ç›¸å™¨
+    trackResult.bitStartFlag  = zeros(m,1); %æ¯”ç‰¹å¼€å§‹æ ‡å¿—
+    trackResult.CN0           = zeros(m,2); %è½½å™ªæ¯”ï¼ˆå¹³å‡å’Œç¬æ—¶ï¼‰
+    trackResult.carrAcc       = zeros(m,1); %è½½æ³¢åŠ é€Ÿåº¦
+    trackResult.strength      = zeros(m,1); %ä¿¡å·å¼ºåº¦
 end
 
 function trackResult = trackResult_clean(trackResult)
-% ÇåÀí¸ú×Ù½á¹ûÖĞµÄ¿Õ°×¿Õ¼ä
+% æ¸…ç†è·Ÿè¸ªç»“æœä¸­çš„ç©ºç™½ç©ºé—´
     n = trackResult.n;
     trackResult.dataIndex(n:end,:)    = [];
     trackResult.ts0(n:end,:)          = [];
